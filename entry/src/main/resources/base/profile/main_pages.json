@@ -1,0 +1,10 @@
+{
+  "src": [
+    "pages/TabUIPage",
+    "pages/Home",
+    "pages/Music_page",
+    "pages/memory_page",
+    "pages/My_Page",
+    "pages/daka_page"
+  ]
+}
