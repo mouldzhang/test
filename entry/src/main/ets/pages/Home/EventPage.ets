@@ -5,15 +5,27 @@ import router from '@ohos.router'
 struct EventPage {
   build() {
     Column({space:10}) {
-      Button("← 返回")
-        .onClick(() => {
-          router.replaceUrl({
-            url: 'pages/TabUIPage'
+      Row(){
+        Button("← 返回")
+          .onClick(() => {
+            router.replaceUrl({
+              url: 'pages/TabUIPage'
+            })
           })
-        })
-        .fontColor(Color.Black)
-        .backgroundColor(Color.Transparent)
-        .alignSelf(ItemAlign.Start)
+          .fontColor(Color.Black)
+          .backgroundColor(Color.Transparent)
+
+        Button("往日事件")
+          .onClick(() => {
+
+          })
+          .fontColor(Color.Black)
+          .backgroundColor(Color.Transparent)
+
+      }
+      .width('100%')
+      .justifyContent(FlexAlign.SpaceBetween)
+
         
 
 
@@ -50,7 +62,9 @@ struct EventPage {
           .backgroundColor("#8b8c8f")
           .borderRadius(8)
           .onClick(() => {
-
+            router.replaceUrl({
+              url: 'pages/TabUIPage'
+            })
           })
         Button("确定")
           .fontColor(Color.Black)
