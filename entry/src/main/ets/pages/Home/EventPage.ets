@@ -1,3 +1,5 @@
+import router from '@ohos.router'
+
 @Entry
 @Component
 struct EventPage {
@@ -5,7 +7,9 @@ struct EventPage {
     Column({space:10}) {
       Button("← 返回")
         .onClick(() => {
-
+          router.replaceUrl({
+            url: 'pages/TabUIPage'
+          })
         })
         .fontColor(Color.Black)
         .backgroundColor(Color.Transparent)
@@ -32,7 +36,7 @@ struct EventPage {
         .fontWeight(FontWeight.Bold)
         .alignSelf(ItemAlign.Start)
 
-      TextInput()
+      TextArea({placeholder:"请描述关于今天的心情事件"})
         .fontColor(Color.Black)
         .height(200)
         .backgroundColor("#dedfe0")

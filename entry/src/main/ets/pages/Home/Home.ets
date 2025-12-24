@@ -1,3 +1,5 @@
+import router from '@ohos.router'
+
 @Entry
 @Component
 export  struct Home {
@@ -77,6 +79,14 @@ export  struct Home {
           .margin({ top: 20 })
           .alignSelf(ItemAlign.Center)
           .backgroundColor(Color.Transparent)
+          .gesture(
+            TapGesture({ count: 2 })
+              .onAction(() => {
+                router.pushUrl({
+                  url: 'pages/Home/EventPage'
+                })
+              })
+          )
 
 
 
