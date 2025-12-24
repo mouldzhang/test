@@ -1,5 +1,5 @@
 import { Home } from './Home/Home';
-import { Memory_page } from './memory/memory_page';
+import { MemoryPage } from './memory/memory_page';
 import { MusicPage } from './music/Music_page';
 import { My_Page } from './my/My_Page';
 
@@ -38,7 +38,7 @@ struct TabUIPage {
         .tabBar(this.tabBuilder("音乐", 1, $r('app.media.music_active'), $r('app.media.music')))
 
         TabContent(){
-          Memory_page()
+          MemoryPage()
         }.tabBar(this.tabBuilder("心情回顾", 2 ,$r('app.media.memory_active'),$r('app.media.memory')))
 
         TabContent(){
