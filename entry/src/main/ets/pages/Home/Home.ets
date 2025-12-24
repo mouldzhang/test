@@ -65,15 +65,19 @@ export  struct Home {
         .margin({ top: 20 })
 
 
-        TextInput({
-          placeholder: "发生心情事件记录"
-        })
+        Button("发生心情事件记录")
+        // TextInput({
+        //   placeholder: "发生心情事件记录"
+        // })
           .width(360)
           .height(150)
+          .fontColor("black")
           .borderWidth(2)
           .borderColor("black")
           .margin({ top: 20 })
           .alignSelf(ItemAlign.Center)
+          .backgroundColor(Color.Transparent)
+
 
 
         Row() {

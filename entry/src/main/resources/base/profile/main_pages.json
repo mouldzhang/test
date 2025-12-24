@@ -1,10 +1,10 @@
 {
   "src": [
     "pages/TabUIPage",
-    "pages/Home",
-    "pages/Music_page",
-    "pages/memory_page",
-    "pages/My_Page",
-    "pages/daka_page"
+    "pages/Home/Home",
+    "pages/music/Music_page",
+    "pages/memory/memory_page",
+    "pages/my/My_Page",
+    "pages/Home/daka_page"
   ]
 }

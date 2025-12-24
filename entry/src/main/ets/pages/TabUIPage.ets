@@ -1,8 +1,8 @@
-import { Daka_page } from './daka_page';
-import { Home } from './Home';
-import { Memory_page } from './memory_page';
-import { Music_page } from './Music_page';
-import { My_Page } from './My_Page';
+import { Daka_page } from './Home/daka_page';
+import { Home } from './Home/Home';
+import { Memory_page } from './memory/memory_page';
+import { Music_page } from './music/Music_page';
+import { My_Page } from './my/My_Page';
 
 @Entry
 @Component
