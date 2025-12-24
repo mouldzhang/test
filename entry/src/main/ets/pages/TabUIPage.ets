@@ -1,4 +1,3 @@
-import { Daka_page } from './Home/daka_page';
 import { Home } from './Home/Home';
 import { Memory_page } from './memory/memory_page';
 import { Music_page } from './music/Music_page';
@@ -20,7 +19,7 @@ struct TabUIPage {
     .height("50")
     .justifyContent(FlexAlign.Center)
   }
-
+// #哈哈
 
   build() {
     Column(){
@@ -55,6 +54,5 @@ struct TabUIPage {
     .height('100%')
     .width('100%')
     .backgroundColor("#f3f3f3")
-
   }
 }
