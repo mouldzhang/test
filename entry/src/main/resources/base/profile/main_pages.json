@@ -1,5 +1,6 @@
 {
   "src": [
+    "pages/login/login",
     "pages/TabUIPage",
     "pages/Home/Home",
     "pages/music/Music_page",
