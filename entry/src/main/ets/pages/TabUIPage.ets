@@ -17,7 +17,7 @@ struct TabUIPage {
     }
     .width("100%")
     .height("50")
-    .justifyContent(FlexAlign.Center)
+    .justifyContent(FlexAlign.SpaceEvenly)
   }
 // #哈哈
 

@@ -23,15 +23,18 @@ export  struct Home {
           Text('记录心情')
             .fontSize(18)
             .fontWeight(FontWeight.Bold)
-            .margin({ left: 1, top: 5 })
+            .margin({ left: 1})
             .alignSelf(ItemAlign.Start)
 
           Text("搜索昨天发生的事情")
             .fontSize(18)
             .fontWeight(FontWeight.Bold)
-            .margin({ left: 90, top: 5 })
+            .margin({ left: 90})
             .alignSelf(ItemAlign.End)
-        }
+        }.width("100%")
+        .margin({ top : 5})
+        .justifyContent(FlexAlign.SpaceAround)
+
         Button('打卡')
           .width(200)
           .height(200)
@@ -44,6 +47,14 @@ export  struct Home {
           .borderRadius(100)
           .margin({ top: 5 })
           .alignSelf(ItemAlign.Center)
+          .gesture(
+            TapGesture({ count: 1 })
+              .onAction(() => {
+                router.pushUrl({
+                  url: 'pages/Home/daka_page'
+                })
+              })
+          )
 
 
         Row() {
@@ -62,8 +73,7 @@ export  struct Home {
 
 
         }.width('100%')
-        .justifyContent(FlexAlign.SpaceBetween)
-        .padding({ right: 30 })
+        .justifyContent(FlexAlign.SpaceEvenly)
         .margin({ top: 20 })
 
 
@@ -97,7 +107,6 @@ export  struct Home {
             .backgroundColor(Color.Transparent)
             .borderWidth(2)
             .fontColor("black")
-            .margin({ left: 15 })
 
 
           Button("回顾心情")
@@ -106,11 +115,11 @@ export  struct Home {
             .backgroundColor(Color.Transparent)
             .borderWidth(2)
             .fontColor("black")
-            .margin({ left: 20 })
+
         }
-        .alignItems(VerticalAlign.Center)
-        .margin({ top: 25 })
-        .alignSelf(ItemAlign.Center)
+        .width("100%")
+        .margin({ left : 20,top: 25 })
+        .justifyContent(FlexAlign.SpaceAround)
 
         Row() {
           // 音乐展示器
@@ -118,29 +127,31 @@ export  struct Home {
             .width(80)
             .height(80)
             .opacity(1)
-            .margin({ left: 25 })
+
 
           Image($r('app.media.Music_s'))
             .width(60)
             .height(60)
             .opacity(1)
-            .margin({ left: 25 })
+
 
           Image($r('app.media.Music_play'))
             .width(60)
             .height(60)
             .opacity(1)
-            .margin({ left: 25 })
+
 
 
           Image($r('app.media.Music_x'))
             .width(60)
             .height(60)
             .opacity(1)
-            .margin({ left: 25 })
+
         }
-        .margin({ top: 20 })
+        .width("100%")
+        .margin({ left: 25 ,top: 20 })
         .alignSelf(ItemAlign.Center)
+        .justifyContent(FlexAlign.SpaceEvenly)
       }
       .width('100%')
       .padding({ top: 20, bottom: 20 })

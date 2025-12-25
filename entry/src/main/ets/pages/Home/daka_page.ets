@@ -1,8 +1,21 @@
-
+import router from '@ohos.router'
 @Entry
 @Component
 export  struct Daka_page {
   @State message: string = 'Hello World';
+  @State weekendday : string = ""
+
+  //星期组件
+  aboutToAppear(){
+    this.weekendday = this.getWeekday()
+  }
+  getWeekday() : string{
+    const weekdays = ['星期日', '星期一', '星期二', '星期三',
+      '星期四', '星期五', '星期六'];
+    return weekdays[new Date().getDay()]
+  }
+
+
 
 
   build() {
@@ -10,18 +23,23 @@ export  struct Daka_page {
     Column({space : 8}){
       Row(){
         Button("返回")
+          .onClick(() => {
+            router.replaceUrl({
+              url: 'pages/TabUIPage'
+            })
+          })
+
           .fontSize(15)
           .width(70)
           .height(30)
-          .margin({ left: 15})
 
 
         Text("记录心情")
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
-          .margin({ left: 180})
       }
-      .justifyContent(FlexAlign.SpaceBetween)
+      .width("100%")
+      .justifyContent(FlexAlign.SpaceAround)
 
 
 
@@ -33,17 +51,18 @@ export  struct Daka_page {
 
 
       Row(){
-        Text("天数")
+        TextClock({timeZoneOffset : -8})
+          .format('yy-MM-dd')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .margin({left :20})
 
-        Text("星期几")
+        Text(this.weekendday)
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .margin({left : 15})
       }.width('100%')
-       .justifyContent(FlexAlign.SpaceBetween)
+       .justifyContent(FlexAlign.SpaceEvenly)
       .padding({ right: 30 })
       .margin({ top: 10 })
 
