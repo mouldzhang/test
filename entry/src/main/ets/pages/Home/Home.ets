@@ -18,28 +18,10 @@ export  struct Home {
 
   }
 
-   onPageShow1() {
-    // 打印所有参数，方便排查
-    const allParams = router.getParams();
-    console.log("Home页面接收的所有参数：", JSON.stringify(allParams));
-
-    const params = router.getParams() as MoodParams | undefined;
-    if (params && params.imageName && params.label) {
-      this.selectedMoodLabel = params.label;
-      // 增加资源加载日志
-      console.log("加载图片资源：", `app.media.${params.imageName}`);
-      this.selectedMoodImage = $r(`app.media.${params.imageName}`);
-    } else {
-      console.log("参数为空或不完整：", params);
-      // 兜底清空，避免旧数据干扰
-      this.selectedMoodLabel = "";
-      this.selectedMoodImage = null;
-    }
-  }
 
 
   onPageShow() {
-    const params = router.getParams() as MoodParams | undefined; // 显式类型断言
+    const params = router.getParams() as MoodParams | undefined;
     if (params && params.imageName && params.label) {
       this.selectedMoodLabel = params.label;
       this.selectedMoodImage = $r(`app.media.${params.imageName}`);
@@ -137,9 +119,7 @@ export  struct Home {
 
 
         Button("发生心情事件记录")
-        // TextInput({
-        //   placeholder: "发生心情事件记录"
-        // })
+
           .width(360)
           .height(150)
           .fontColor("black")
@@ -177,8 +157,14 @@ export  struct Home {
 
         }
         .width("100%")
-        .margin({ left : 20,top: 25 })
+        .margin({ left : 20,top: 15 })
         .justifyContent(FlexAlign.SpaceAround)
+
+        Divider()
+          .strokeWidth(2)
+          .color("black")
+          .width("100%")
+          .margin({top: 10})
 
         Row() {
           // 音乐展示器
