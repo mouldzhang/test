@@ -1,4 +1,6 @@
 import router from '@ohos.router'
+import XQbiaoqianDialog from '../dialog/XQbiaoqianDialog';
+
 @Entry
 @Component
 export  struct Daka_page {
@@ -15,6 +17,12 @@ export  struct Daka_page {
     return weekdays[new Date().getDay()]
   }
 
+
+  controllelr  :  CustomDialogController = new CustomDialogController({
+    builder :  XQbiaoqianDialog({
+
+    })
+  })
 
 
 

@@ -1,4 +1,6 @@
 import router from '@ohos.router'
+import { CustomContentDialog } from '@kit.ArkUI';
+import XQbiaoqianDialog from '../dialog/XQbiaoqianDialog';
 
 @Entry
 @Component
@@ -14,7 +16,17 @@ export  struct Home {
     const weekdays = ['星期日', '星期一', '星期二', '星期三',
       '星期四', '星期五', '星期六'];
     return weekdays[new Date().getDay()]
+
   }
+
+
+  //打卡弹窗控制器
+ controllelr  :  CustomDialogController = new CustomDialogController({
+   builder :  XQbiaoqianDialog({
+
+   })
+ })
+
 
   build() {
     Scroll() {
@@ -54,14 +66,10 @@ export  struct Home {
           .borderRadius(100)
           .margin({ top: 2 })
           .alignSelf(ItemAlign.Center)
-          .gesture(
-            TapGesture({ count: 1 })
-              .onAction(() => {
-                router.pushUrl({
-                  url: 'pages/Home/daka_page'
-                })
-              })
-          )
+          .onClick(()=>{
+           this.controllelr.open()
+          })
+
 
 
         Row() {
