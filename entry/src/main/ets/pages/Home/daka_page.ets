@@ -1,11 +1,17 @@
 import router from '@ohos.router'
+import changeXQlabelDialog from '../dialog/changeXQlabelDialog';
 import XQbiaoqianDialog from '../dialog/XQbiaoqianDialog';
+
+import { XQZiYuan,MoodParams,ChangeLabelParams } from '../types';
+
 
 @Entry
 @Component
 export  struct Daka_page {
-  @State message: string = 'Hello World';
+
   @State weekendday : string = ""
+  @State XQlabel: string = '';
+  @State selectedXQ : XQZiYuan |null = null
 
   //星期组件
   aboutToAppear(){
@@ -17,13 +23,25 @@ export  struct Daka_page {
     return weekdays[new Date().getDay()]
   }
 
+  // 改变标签弹窗
+  controllerchanglabel : CustomDialogController = new CustomDialogController({
+    builder : changeXQlabelDialog({
 
-  controllelr  :  CustomDialogController = new CustomDialogController({
-    builder :  XQbiaoqianDialog({
-
-    })
+      onConfirm: (result: ChangeLabelParams) => {
+        this.XQlabel = result.XQlabel;
+      }
+      })
   })
 
+  // 选择 心情弹窗
+  controller  :  CustomDialogController = new CustomDialogController({
+    builder :  XQbiaoqianDialog({
+      onConfirm :(selected : XQZiYuan) =>{
+        this.selectedXQ = selected;
+        this.XQlabel = selected.label
+      }
+    })
+  })
 
 
   build() {
@@ -75,26 +93,48 @@ export  struct Daka_page {
       .margin({ top: 10 })
 
 
-
-      Button('标签')
+    if(this.selectedXQ){
+      Image(this.selectedXQ.image)
         .width(150)
         .height(150)
-        .fontSize(36)
+        .onClick(()=>{
+          this.controller.open()
+        })
+    }else {
+      Button("选择心情")
+        .width(150)
+        .height(150)
+        .fontSize(20)
         .fontColor("gray")
         .fontWeight(FontWeight.Bold)
         .borderWidth(2)
         .borderColor("black")
         .backgroundColor(Color.Transparent)
-        .borderRadius(100)
         .margin({ top: 5 })
         .alignSelf(ItemAlign.Center)
         .hoverEffect(HoverEffect.Highlight)
+        .borderRadius(100)
+        .onClick(()=>{
+          this.controller.open()
+        })
+    }
 
-      Text(this.message)
-        .fontSize("25")
-        .alignSelf(ItemAlign.Center)
-        .padding(15)
-        .hoverEffect(HoverEffect.Highlight)
+      if (this.XQlabel){
+        Text(this.XQlabel)
+          .fontSize("25")
+          .alignSelf(ItemAlign.Center)
+          .padding(15)
+          .hoverEffect(HoverEffect.Highlight)
+      }else {
+        Text()
+          .fontSize("25")
+          .alignSelf(ItemAlign.Center)
+          .padding(15)
+          .hoverEffect(HoverEffect.Highlight)
+
+      }
+
+
 
       Button("描述你今天的心情")
         .width(150)
@@ -104,6 +144,9 @@ export  struct Daka_page {
         .backgroundColor(Color.Transparent)
         .fontColor("black")
         .borderWidth(2)
+        .onClick(()=>{
+          this.controllerchanglabel.open()
+        })
 
 
       Divider()
@@ -121,20 +164,31 @@ export  struct Daka_page {
          .fontColor("black")
          .borderWidth(2)
          .margin({top : 85})
+         .onClick(()=>{
+
+           console.log("准备传递的参数：", {
+             imageName: this.selectedXQ?.imageName,
+             label: this.XQlabel
+           });
+
+           const moodData : MoodParams= {
+             imageName: this.selectedXQ?.imageName || "",
+             label: this.XQlabel || ""
+           };
+
+           router.back(
+             // url :'page/Home/Home',
+            1,moodData
+           );
 
 
-
-
+         })
     }
     .width('100%')
-
-
     }
     .width('100%')
     .height('100%')
     .scrollBar(BarState.On)
     .backgroundColor("#f3f3f3")
-
-
   }
   }

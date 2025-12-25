@@ -1,13 +1,12 @@
 import router from '@ohos.router'
-import { CustomContentDialog } from '@kit.ArkUI';
-import XQbiaoqianDialog from '../dialog/XQbiaoqianDialog';
-
+import { MoodParams} from '../types';
 @Entry
 @Component
 export  struct Home {
   @State message: string = 'Home';
   @State weekendday : string = ''
-
+  @State selectedMoodImage: Resource | null = null;
+  @State selectedMoodLabel: string = "";
   //星期获取组件
   aboutToAppear(){
     this.weekendday = this.getWeekday()
@@ -19,13 +18,34 @@ export  struct Home {
 
   }
 
+   onPageShow1() {
+    // 打印所有参数，方便排查
+    const allParams = router.getParams();
+    console.log("Home页面接收的所有参数：", JSON.stringify(allParams));
 
-  //打卡弹窗控制器
- controllelr  :  CustomDialogController = new CustomDialogController({
-   builder :  XQbiaoqianDialog({
+    const params = router.getParams() as MoodParams | undefined;
+    if (params && params.imageName && params.label) {
+      this.selectedMoodLabel = params.label;
+      // 增加资源加载日志
+      console.log("加载图片资源：", `app.media.${params.imageName}`);
+      this.selectedMoodImage = $r(`app.media.${params.imageName}`);
+    } else {
+      console.log("参数为空或不完整：", params);
+      // 兜底清空，避免旧数据干扰
+      this.selectedMoodLabel = "";
+      this.selectedMoodImage = null;
+    }
+  }
 
-   })
- })
+
+  onPageShow() {
+    const params = router.getParams() as MoodParams | undefined; // 显式类型断言
+    if (params && params.imageName && params.label) {
+      this.selectedMoodLabel = params.label;
+      this.selectedMoodImage = $r(`app.media.${params.imageName}`);
+    }
+  }
+
 
 
   build() {
@@ -53,22 +73,41 @@ export  struct Home {
           .margin(10)
           .width("100%")
 
-
-        Button('打卡')
-          .width(200)
-          .height(200)
-          .fontSize(36)
-          .fontColor("green")
-          .fontWeight(FontWeight.Bold)
-          .borderWidth(2)
-          .borderColor("black")
-          .backgroundColor(Color.Transparent)
-          .borderRadius(100)
-          .margin({ top: 2 })
-          .alignSelf(ItemAlign.Center)
-          .onClick(()=>{
-           this.controllelr.open()
-          })
+        if(this.selectedMoodImage){
+          Image(this.selectedMoodImage)
+            .width(200)
+            .height(200)
+            .margin({ top: 2 })
+            .alignSelf(ItemAlign.Center)
+            .gesture(
+               TapGesture({ count: 1 })
+                .onAction(() => {
+                  router.pushUrl({
+                     url: 'pages/Home/daka_page'
+                   })
+              }))
+        }else{
+          Button('打卡')
+             .width(200)
+             .height(200)
+             .fontSize(36)
+             .fontColor("green")
+             .fontWeight(FontWeight.Bold)
+             .borderWidth(2)
+             .borderColor("black")
+             .backgroundColor(Color.Transparent)
+             .borderRadius(100)
+             .margin({ top: 2 })
+             .alignSelf(ItemAlign.Center)
+            .gesture(
+               TapGesture({ count: 1 })
+                 .onAction(() => {
+                   router.pushUrl({
+                     url: 'pages/Home/daka_page'
+                  })
+                })
+            )
+        }
 
 
 
@@ -78,9 +117,14 @@ export  struct Home {
           .fontSize(20)
           .margin({ left: 10 })
 
-          Text("温度")
-            .fontSize(25)
-            .margin({ left: 45 })
+
+          if(this.selectedMoodLabel){
+            Text(this.selectedMoodLabel)
+              .fontSize(25)
+              .margin({ left: 45 })
+          }
+
+
 
           Text(this.weekendday)
             .fontSize(25)
