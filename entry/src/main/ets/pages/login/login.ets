@@ -13,7 +13,7 @@ export struct Index {
   build() {
     Column() {
       // logo图标
-      Image($r('app.media.Music_cover'))
+      Image($r('app.media.login'))
         .width(250)
         .height(240)
 
@@ -79,7 +79,8 @@ export struct Index {
       // 登录按钮（核心修改：增加协议勾选校验）
       Button('登录')
         .width('100%')
-        .backgroundColor('#c02839')
+        .fontColor("black")
+        .backgroundColor("#D7EDA2")
         .margin({ top: 20 })
         .onClick(() => {
           // 第一步：校验是否勾选协议

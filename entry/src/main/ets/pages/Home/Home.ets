@@ -32,8 +32,15 @@ export  struct Home {
             .margin({ left: 90})
             .alignSelf(ItemAlign.End)
         }.width("100%")
-        .margin({ top : 5})
+        .margin({ top : 1})
         .justifyContent(FlexAlign.SpaceAround)
+
+        Divider()
+          .strokeWidth(1)
+          .color("black")
+          .margin(10)
+          .width("100%")
+
 
         Button('打卡')
           .width(200)
@@ -45,7 +52,7 @@ export  struct Home {
           .borderColor("black")
           .backgroundColor(Color.Transparent)
           .borderRadius(100)
-          .margin({ top: 5 })
+          .margin({ top: 2 })
           .alignSelf(ItemAlign.Center)
           .gesture(
             TapGesture({ count: 1 })
@@ -65,7 +72,7 @@ export  struct Home {
 
           Text("温度")
             .fontSize(25)
-            .margin({ left: 60 })
+            .margin({ left: 45 })
 
           Text(this.weekendday)
             .fontSize(25)
@@ -74,7 +81,7 @@ export  struct Home {
 
         }.width('100%')
         .justifyContent(FlexAlign.SpaceEvenly)
-        .margin({ top: 20 })
+        .margin({ top: 12 })
 
 
         Button("发生心情事件记录")
@@ -86,7 +93,7 @@ export  struct Home {
           .fontColor("black")
           .borderWidth(2)
           .borderColor("black")
-          .margin({ top: 20 })
+          .margin({ top: 10})
           .alignSelf(ItemAlign.Center)
           .backgroundColor(Color.Transparent)
           .gesture(
@@ -118,7 +125,7 @@ export  struct Home {
 
         }
         .width("100%")
-        .margin({ left : 20,top: 25 })
+        .margin({ left : 20,top: 15 })
         .justifyContent(FlexAlign.SpaceAround)
 
         Row() {
@@ -149,7 +156,7 @@ export  struct Home {
 
         }
         .width("100%")
-        .margin({ left: 25 ,top: 20 })
+        .margin({ left: 25 ,top: 25 })
         .alignSelf(ItemAlign.Center)
         .justifyContent(FlexAlign.SpaceEvenly)
       }
