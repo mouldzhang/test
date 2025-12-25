@@ -105,7 +105,7 @@ export struct Index {
           Image($r('app.media.Memory_qq')).width(30)
           Image($r('app.media.Memory_weiXin')).width(30).fillColor('#5ea14f')
           Image($r('app.media.Memory_telephone')).width(30).fillColor('#ac4e52')
-          Image($r('app.media.Memory_weiBo')).width(30).fillColor('#5cacf3')
+          Image($r('app.media.Memory_bo')).width(30).fillColor('#5cacf3')
         }
         .margin({ bottom: 10 })
         .justifyContent(FlexAlign.SpaceAround)
