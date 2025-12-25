@@ -36,7 +36,7 @@ export  struct Home {
         .justifyContent(FlexAlign.SpaceAround)
 
         Divider()
-          .strokeWidth(1)
+          .strokeWidth(2)
           .color("black")
           .margin(10)
           .width("100%")
@@ -125,7 +125,7 @@ export  struct Home {
 
         }
         .width("100%")
-        .margin({ left : 20,top: 15 })
+        .margin({ left : 20,top: 25 })
         .justifyContent(FlexAlign.SpaceAround)
 
         Row() {
@@ -156,7 +156,7 @@ export  struct Home {
 
         }
         .width("100%")
-        .margin({ left: 25 ,top: 25 })
+        .margin({ left: 25 ,top: 20 })
         .alignSelf(ItemAlign.Center)
         .justifyContent(FlexAlign.SpaceEvenly)
       }
