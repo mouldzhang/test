@@ -1,3 +1,5 @@
+import XQbiaoqianDialog from '../dialog/XQbiaoqianDialog';
+import { XQZiYuan } from '../types'; // 引入类型
 @Entry
 @Component
 export struct MemoryPage {
