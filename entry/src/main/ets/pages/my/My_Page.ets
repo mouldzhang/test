@@ -49,7 +49,7 @@ export struct My_Page {
           .width('100%')
           .height('100%')
           .autoPlay(true) // 自动轮播
-          .interval(3000) // 轮播间隔3秒
+          .interval(5000) // 轮播间隔3秒
           .indicator(true) // 显示指示器
           .loop(true) // 循环轮播
           .duration(1000) // 切换动画时长1秒
@@ -106,13 +106,13 @@ export struct My_Page {
             Blank() // 左侧空白区域，让内容靠右
             Column() {
               // 菜单图标按钮
-              Image($r('app.media.startIcon')) // 请确保项目中有此资源，或使用系统图标
+              Image($r('app.media.sanhengxian')) // 请确保项目中有此资源，或使用系统图标
                 .width(40)
                 .height(40)
                 .objectFit(ImageFit.Contain)
                 .padding(5)
                 .backgroundColor('rgba(0, 0, 0, 0.3)')
-                .borderRadius(20)
+                .borderRadius(30)
                 .onClick(() => {
                   // 点击图标切换侧边栏显示状态
                   this.showSidebar = !this.showSidebar;
@@ -123,7 +123,7 @@ export struct My_Page {
           .width('100%')
           .height('100%')
           .alignItems(VerticalAlign.Top)
-          .padding({ top: 24, right: 24 })
+          .padding({ top: 28, right: 24 })
         }
         .width('100%')
         .height('33.33%') // 始终占屏幕高度的1/3
@@ -168,30 +168,37 @@ export struct My_Page {
           Column() {
             // 侧边栏头部（可添加关闭按钮）
             Row() {
-              Text('菜单')
-                .fontSize(20)
-                .fontWeight(FontWeight.Bold)
-
-              Blank()
 
               // 关闭按钮
-              Image($r('app.media.startIcon'))
-                .width(40)
-                .height(40)
+              Image($r('app.media.sanhengxian'))
+                .width(35)
+                .height(35)
                 .onClick(() => {
                   this.closeSidebar();
                 })
+
+              Blank()
+
+              Text('菜单')
+                .fontSize(25)
+                .fontWeight(FontWeight.Bold)
+
+
             }
             .width('100%')
-            .margin({ top: 60, bottom: 30 })
+            .margin({ top: 50, bottom: 30 })
             .padding({ left: 20, right: 20 })
 
             // 示例菜单项
-            MyMenuItem({ icon: $r('app.media.startIcon'), text: '首页' })
-            MyMenuItem({ icon: $r('app.media.startIcon'), text: '个人资料' })
-            MyMenuItem({ icon: $r('app.media.startIcon'), text: '设置' })
-            MyMenuItem({ icon: $r('app.media.startIcon'), text: '帮助与反馈' })
-            MyMenuItem({ icon: $r('app.media.startIcon'), text: '退出登录' })
+            MyMenuItem({ icon: $r('app.media.shouye'), text: '首页' })
+            MyMenuItem({ icon: $r('app.media.geren'), text: '个人资料' })
+            MyMenuItem({ icon: $r('app.media.lishi'), text: '历史记录' })
+            MyMenuItem({ icon: $r('app.media.bangzhu'), text: '帮助与反馈' })
+            MyMenuItem({ icon: $r('app.media.erweim'), text: '我的二维码' })
+            MyMenuItem({ icon: $r('app.media.huancun'), text: '清理缓存' })
+            MyMenuItem({ icon: $r('app.media.shezhi'), text: '设置' })
+            MyMenuItem({ icon: $r('app.media.zhangh'), text: '切换账号' })
+            MyMenuItem({ icon: $r('app.media.tuichu'), text: '退出登录' })
           }
           .width('70%') // 侧边栏宽度占屏幕70%
           .height('100%')
