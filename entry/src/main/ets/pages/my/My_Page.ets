@@ -1,9 +1,15 @@
+interface MoodItem {
+  icon: Resource;
+  text: string;
+}
+
 @Entry
 @Component
 export struct My_Page {
   @State message: string = 'my';
   @State currentIndex: number = 0;
   @State showSidebar: boolean = false; // 控制侧边栏显示状态
+  @State currentTab: string = '心情'; // 控制标签栏选中状态
 
   // 使用 $r() 函数引用本地图片资源
   private imageList: Resource[] = [
@@ -12,6 +18,17 @@ export struct My_Page {
     $r('app.media.slidshow3'),
     $r('app.media.slidshow4')
   ];
+
+  // 心情选项数据
+  private moodList: MoodItem[] = [
+    { icon: $r('app.media.startIcon'), text: '开心' },
+    { icon: $r('app.media.startIcon'), text: '愉悦' },
+    { icon: $r('app.media.startIcon'), text: '给你两刀' },
+    { icon: $r('app.media.startIcon'), text: '来两个大嘴巴子' }
+  ];
+
+  // 标签栏数据
+  private tabList: string[] = ['心情', '近期', '创建', '收藏'];
 
   // 关闭侧边栏的方法
   closeSidebar() {
@@ -59,12 +76,10 @@ export struct My_Page {
           })
 
           // 固定在轮播图左下角的头像和用户信息
-          // 使用响应式设计，适应不同屏幕
           Row() {
             // 圆形头像
             Stack() {
-              // 头像图片，这里使用示例资源，请替换为实际头像资源
-              Image($r('app.media.avatar')) // 请确保项目中有此资源
+              Image($r('app.media.avatar')) // 请替换为实际头像资源
                 .width('100%')
                 .height('100%')
                 .objectFit(ImageFit.Cover)
@@ -75,10 +90,9 @@ export struct My_Page {
             .borderRadius(30) // 确保圆形
             .border({ width: 2, color: Color.White }) // 白色边框
 
-            // 用户信息：用户名和账号（垂直排列，用户名在上，账号在下）
+            // 用户信息：用户名和账号（垂直排列）
             Column() {
-              // 用户名
-              Text('用户名')
+              Text('用户名：xxx')
                 .fontSize(18)
                 .fontColor(Color.White)
                 .fontWeight(FontWeight.Bold)
@@ -86,27 +100,25 @@ export struct My_Page {
                 .maxLines(1)
                 .textOverflow({ overflow: TextOverflow.Ellipsis })
 
-              // 账号
-              Text('@user123')
+              Text('账 号：xxx')
                 .fontSize(14)
                 .fontColor('#f0f0f0')
                 .textAlign(TextAlign.Start)
                 .maxLines(1)
                 .textOverflow({ overflow: TextOverflow.Ellipsis })
             }
-            .margin({ left: 12 }) // 与头像的间距
+            .margin({ left: 12 })
             .alignItems(HorizontalAlign.Start)
             .justifyContent(FlexAlign.Center)
           }
-          .margin({ left: 24, bottom: 24 }) // 固定在左下角，使用固定边距
-          .alignItems(VerticalAlign.Center) // 垂直居中对齐
+          .margin({ left: 24, bottom: 24 })
+          .alignItems(VerticalAlign.Center)
 
           // 轮播图右上角的菜单按钮
           Row() {
-            Blank() // 左侧空白区域，让内容靠右
+            Blank()
             Column() {
-              // 菜单图标按钮
-              Image($r('app.media.sanhengxian')) // 请确保项目中有此资源，或使用系统图标
+              Image($r('app.media.sanhengxian')) // 菜单图标
                 .width(40)
                 .height(40)
                 .objectFit(ImageFit.Contain)
@@ -114,7 +126,6 @@ export struct My_Page {
                 .backgroundColor('rgba(0, 0, 0, 0.3)')
                 .borderRadius(30)
                 .onClick(() => {
-                  // 点击图标切换侧边栏显示状态
                   this.showSidebar = !this.showSidebar;
                 })
             }
@@ -126,25 +137,135 @@ export struct My_Page {
           .padding({ top: 28, right: 24 })
         }
         .width('100%')
-        .height('33.33%') // 始终占屏幕高度的1/3
+        .height('33.33%') // 顶部1/3区域
 
-        // 底部占2/3的预留区域
+        // 底部占2/3的核心内容区域（完善部分）
         Column() {
-          // 预留区域，后续可以添加内容
-          Text('预留区域 (占屏幕2/3)')
-            .fontSize(18)
-            .fontColor('#333')
+          // 1. 个人资料卡片区域
+          Column() {
+            // 1.1 性别/日期/地区标签行（蓝色背景）
+            Row() {
+              Text('男')
+                .fontSize(14)
+                .fontColor(Color.White)
+              Text('|')
+                .fontSize(14)
+                .fontColor(Color.White)
+                .margin({ left: 4, right: 4 })
+              Text('12月23日')
+                .fontSize(14)
+                .fontColor(Color.White)
+              Text('|')
+                .fontSize(14)
+                .fontColor(Color.White)
+                .margin({ left: 4, right: 4 })
+              Text('冰岛')
+                .fontSize(14)
+                .fontColor(Color.White)
+            }
+            .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+            .backgroundColor('#4A90E2') // 蓝色背景匹配UI
+            .borderRadius(4)
+            .margin({ bottom: 8 })
 
-          // 显示当前轮播的索引（可选）
-          Text(`当前轮播索引: ${this.currentIndex + 1}/${this.imageList.length}`)
-            .fontSize(14)
-            .fontColor('#666')
-            .margin({ top: 10 })
+            // 1.2 个性签名
+            Text('个性签名：洗洗睡了！！！')
+              .fontSize(14)
+              .fontColor('#333333')
+              .margin({ bottom: 12 })
+              .textAlign(TextAlign.Start)
+              .width('100%')
+
+            // 1.3 编辑资料按钮
+            Button('编辑资料')
+              .width('100%')
+              .height(40)
+              .backgroundColor('#E5E5E5') // 灰色背景
+              .fontSize(14)
+              .fontColor('#666666')
+              .borderRadius(4)
+              .border({ width: 0 }) // 去掉默认边框
+          }
+          .width('90%')
+          .padding({ top: 16, bottom: 16, left: 16, right: 16 })
+          .backgroundColor(Color.White)
+          .borderRadius(8)
+          .margin({ top: 16, bottom: 16 })
+          .alignItems(HorizontalAlign.Start)
+
+          // 2. 标签栏（心情/近期/创建/收藏）
+          Row() {
+            ForEach(this.tabList, (tab: string) => {
+              Column() {
+                Text(tab)
+                  .fontSize(16)
+                  .fontColor(this.currentTab === tab ? '#4A90E2' : '#666666')
+                  .fontWeight(this.currentTab === tab ? FontWeight.Bold : FontWeight.Normal)
+                // 选中标签的下划线
+                if (this.currentTab === tab) {
+                  Divider()
+                    .width(20)
+                    .height(2)
+                    .backgroundColor('#4A90E2')
+                    .margin({ top: 4 })
+                }
+              }
+              .onClick(() => {
+                this.currentTab = tab;
+              })
+              .flexGrow(1)
+              .alignItems(HorizontalAlign.Center)
+            })
+          }
+          .width('90%')
+          .height(44)
+          .backgroundColor(Color.White)
+          .borderRadius(4)
+          .margin({ bottom: 12 })
+
+          // 3. 标签内容区域（默认显示心情内容）
+          Stack() {
+            if (this.currentTab === '心情') {
+              // 心情选项网格布局（2列）
+              Grid() {
+                ForEach(this.moodList, (item: MoodItem, index: number) => {
+                  GridItem() {
+                    Column() {
+                      Image(item.icon)
+                        .width(24)
+                        .height(24)
+                        .margin({ bottom: 8 })
+                      Text(item.text)
+                        .fontSize(14)
+                        .fontColor('#333333')
+                    }
+                    .width('100%')
+                    .height(80)
+                    .justifyContent(FlexAlign.Center)
+                    .alignItems(HorizontalAlign.Center)
+                    .backgroundColor(Color.White)
+                    .border({ width: 1, color: '#EEEEEE' })
+                  }
+                })
+              }
+              .width('90%')
+              .columnsTemplate('1fr 1fr') // 2列布局
+              .columnsGap(1)
+              .rowsGap(1)
+              .backgroundColor('#EEEEEE')
+            } else {
+              // 其他标签占位内容
+              Text(`暂无${this.currentTab}相关内容`)
+                .fontSize(14)
+                .fontColor('#999999')
+                .padding(20)
+            }
+          }
         }
         .width('100%')
-        .height('66.67%') // 始终占屏幕高度的2/3
-        .backgroundColor(Color.White)
-        .justifyContent(FlexAlign.Center)
+        .height('66.67%') // 底部2/3区域
+        .backgroundColor('#F5F5F5')
+        .justifyContent(FlexAlign.Start)
         .alignItems(HorizontalAlign.Center)
       }
       .height('100%')
@@ -158,7 +279,7 @@ export struct My_Page {
           Column() {
             Blank()
           }
-          .width('30%') // 左侧30%区域可点击关闭
+          .width('30%')
           .height('100%')
           .onClick(() => {
             this.closeSidebar();
@@ -166,30 +287,22 @@ export struct My_Page {
 
           // 侧边栏内容区域
           Column() {
-            // 侧边栏头部（可添加关闭按钮）
             Row() {
-
-              // 关闭按钮
               Image($r('app.media.sanhengxian'))
                 .width(35)
                 .height(35)
                 .onClick(() => {
                   this.closeSidebar();
                 })
-
               Blank()
-
               Text('菜单')
                 .fontSize(25)
                 .fontWeight(FontWeight.Bold)
-
-
             }
             .width('100%')
             .margin({ top: 50, bottom: 30 })
             .padding({ left: 20, right: 20 })
 
-            // 示例菜单项
             MyMenuItem({ icon: $r('app.media.shouye'), text: '首页' })
             MyMenuItem({ icon: $r('app.media.geren'), text: '个人资料' })
             MyMenuItem({ icon: $r('app.media.lishi'), text: '历史记录' })
@@ -200,20 +313,16 @@ export struct My_Page {
             MyMenuItem({ icon: $r('app.media.zhangh'), text: '切换账号' })
             MyMenuItem({ icon: $r('app.media.tuichu'), text: '退出登录' })
           }
-          .width('70%') // 侧边栏宽度占屏幕70%
+          .width('70%')
           .height('100%')
           .backgroundColor(Color.White)
-          .position({ x: '30%' }) // 从左侧30%位置开始
+          .position({ x: '30%' })
           .shadow({ radius: 10, color: '#40000000', offsetX: -2 })
         }
         .width('100%')
         .height('100%')
-        .backgroundColor('#60000000') // 半透明黑色遮罩
+        .backgroundColor('#60000000')
         .position({ x: 0, y: 0 })
-        .onClick(() => {
-          // 点击遮罩层任何位置（除侧边栏内容外）都可以关闭侧边栏
-          // 注意：这个点击事件会被子组件的点击事件覆盖，所以实际上只会关闭侧边栏
-        })
       }
     }
     .height('100%')
@@ -221,22 +330,25 @@ export struct My_Page {
   }
 }
 
+interface MenuItem {
+  icon: Resource;
+  text: string;
+}
+
 // 侧边栏菜单项组件
 @Component
 struct MyMenuItem {
-  private icon: Resource = $r('app.media.startIcon'); // 图标资源，设置默认值
-  private text: string = ''; // 菜单文本，设置默认值
+  private icon: Resource = $r('app.media.startIcon');
+  private text: string = '';
 
   build() {
     Row() {
-      // 菜单图标
       Image(this.icon)
         .width(24)
         .height(24)
         .margin({ right: 12 })
         .objectFit(ImageFit.Contain)
 
-      // 菜单文本
       Text(this.text)
         .fontSize(16)
         .fontColor('#333')
@@ -247,7 +359,6 @@ struct MyMenuItem {
     .padding({ top: 15, bottom: 15, left: 20, right: 20 })
     .alignItems(VerticalAlign.Center)
     .onClick(() => {
-      // 这里可以添加菜单项的点击事件
       console.log(`点击了菜单项: ${this.text}`);
     })
   }
