@@ -19,7 +19,6 @@ export  struct Home {
     label: ""
   };
 
-  // 1. 关键：绑定 AppStorage 中的心情事件文本，初始值为默认按钮文本
   @StorageProp("moodEventText") moodEventText: string = "发生心情事件记录";
 
   //星期获取组件
@@ -38,6 +37,7 @@ export  struct Home {
     if (this.globalMoodData.imageName && this.globalMoodData.label) {
       if (VALID_IMAGE_NAMES.includes(this.globalMoodData.imageName)) {
         this.selectedMoodLabel = this.globalMoodData.label;
+        AppStorage.Set("moodData", this.globalMoodData);
         try {
           const resPath = `app.media.${this.globalMoodData.imageName}`;
           console.log("Home 加载资源路径：", resPath);
@@ -51,13 +51,12 @@ export  struct Home {
         console.error("Home 非法资源名：", this.globalMoodData.imageName);
       }
     } else {
-      console.log("Home 全局参数为空");
+      this.selectedMoodLabel = "";
     }
   }
 
   onPageShow() {
     this.syncMoodData();
-    // 可选：页面显示时，强制同步一次文本（确保最新）
     this.moodEventText = AppStorage.Get("moodEventText") || "发生心情事件记录";
   }
 
@@ -68,18 +67,30 @@ export  struct Home {
           Text('记录心情')
             .fontSize(18)
             .fontWeight(FontWeight.Bold)
-            .margin({ left: 1})
+            .margin({ left: 1,top : 10})
             .alignSelf(ItemAlign.Start)
 
-          Text("搜索昨天发生的事情")
+          Button("搜索昨天发生的事情")
             .fontSize(18)
             .fontWeight(FontWeight.Bold)
+            .fontColor("black")
             .margin({ left: 90})
             .alignSelf(ItemAlign.End)
+            .backgroundColor(Color.Transparent)
+
+            .onClick(()=>{
+              // 核心修改：跳转至新建的百度搜索页面
+              router.pushUrl({
+                url: 'pages/baidu_page' // 路由路径和新建页面一致
+              }).catch((error :Error) => {
+                console.error("跳转百度失败：", error);
+              });
+            })
         }.width("100%")
         .margin({ top : 1})
         .justifyContent(FlexAlign.SpaceAround)
 
+        // 以下原有代码完全不变，无需修改
         Divider()
           .strokeWidth(2)
           .color("black")
@@ -145,8 +156,8 @@ export  struct Home {
         .justifyContent(FlexAlign.SpaceEvenly)
         .margin({ top: 30 })
 
-        if(this.moodEventText) { // 2. 关键：替换原有按钮，文本使用全局绑定的 moodEventText，保留原有样式和点击事件
-          Button(this.moodEventText) // 直接使用绑定的文本，自动更新
+        if(this.moodEventText) {
+          Button(this.moodEventText)
             .width(360)
             .height(150)
             .fontColor("black")
@@ -166,7 +177,6 @@ export  struct Home {
                 })
             )
         }else{
-
           Button("发生心情事件记录")
             .width(360)
             .height(150)
@@ -185,7 +195,6 @@ export  struct Home {
                     console.error('路由跳转失败:', error.message);
                   });
                 }))
-
         }
         Divider()
           .strokeWidth(2)

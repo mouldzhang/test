@@ -8,6 +8,6 @@
     "pages/Home/daka_page",
     "pages/Home/EventPage",
     "pages/music/Music_page",
-    "pages/music/FavoritesPage"
+    "pages/baidu_page"
   ]
 }
