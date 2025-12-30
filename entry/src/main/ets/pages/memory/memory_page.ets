@@ -201,7 +201,7 @@ export struct MemoryPage {
 
         }
         .width('100%')
-        .justifyContent(FlexAlign.SpaceBetween)
+        .justifyContent(FlexAlign.SpaceAround)
         .padding({ left: 15, right: 15, top: 15 })
         .alignSelf(ItemAlign.Start)
       }
