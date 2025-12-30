@@ -19,18 +19,15 @@ struct TabUIPage {
     .height("50")
     .justifyContent(FlexAlign.SpaceEvenly)
   }
-// #哈哈
 
   build() {
     Column(){
       Tabs({ barPosition : BarPosition.End}){
-//记录心情页面
-       //主页面
+        //记录心情页面
+        //主页面
         TabContent(){
           Home()
         }.tabBar(this.tabBuilder("心情记录", 0 ,$r('app.media.Home_active'),$r('app.media.Home')))
-
-
 
         TabContent() {
           MusicPage()
@@ -49,6 +46,8 @@ struct TabUIPage {
       .onChange((index:number) =>{
         this.nowactivenumIndex = index
       })
+      .barHeight(60) // 设置TabBar的高度
+      .barWidth('100%')
       .backgroundColor("#D7EDA2")
 
     }

@@ -1,9 +1,7 @@
 import router from '@ohos.router'
 import changeXQlabelDialog from '../dialog/changeXQlabelDialog';
 import XQbiaoqianDialog from '../dialog/XQbiaoqianDialog';
-
 import { XQZiYuan,MoodParams,ChangeLabelParams } from '../types';
-
 
 @Entry
 @Component
@@ -31,12 +29,13 @@ export  struct Daka_page {
         this.XQlabel = result.XQlabel;
       }
       })
-  })
+  });
 
   // 选择 心情弹窗
   controller  :  CustomDialogController = new CustomDialogController({
     builder :  XQbiaoqianDialog({
       onConfirm :(selected : XQZiYuan) =>{
+        console.log("Daka_page 收到弹窗数据：", JSON.stringify(selected));
         this.selectedXQ = selected;
         this.XQlabel = selected.label
       }
@@ -165,24 +164,25 @@ export  struct Daka_page {
          .borderWidth(2)
          .margin({top : 85})
          .onClick(()=>{
+           // 1. 构造参数
+           if(!this.selectedXQ){
+             console.error("Daka_page：selectedXQ 为空！请先选择心情！");
+             return; // 没选心情就不保存
+           }
 
-           console.log("准备传递的参数：", {
-             imageName: this.selectedXQ?.imageName,
-             label: this.XQlabel
-           });
-
+           // 2. 构造参数
            const moodData : MoodParams= {
-             imageName: this.selectedXQ?.imageName || "",
-             label: this.XQlabel || ""
+             imageName: this.selectedXQ.imageName, // 不用 ||""，确保有值
+             label: this.XQlabel
            };
+           console.log("Daka_page 准备存储全局参数：", JSON.stringify(moodData));
 
-           router.back(
-             // url :'page/Home/Home',
-            1,moodData
-           );
+           // 3. 强制存入 AppStorage（用 Set 确保覆盖旧数据）
+           AppStorage.Set("moodData", moodData);
 
-
-         })
+           // 5. 直接跳回 TabUIPage（比 back 更稳定）
+           router.replaceUrl({ url: 'pages/TabUIPage' });
+         });
     }
     .width('100%')
     }

@@ -13,11 +13,11 @@ export default struct XQbiaoqianDialog{
     { image: $r('app.media.XQsad'), imageName:"XQsad",label: '伤心' },
     { image: $r('app.media.XQbaoxiao'), imageName:"XQbaoxiao",label: '爆笑' },
     { image: $r('app.media.XQliuhan'), imageName:"XQliuhan",label: '流汗' },
-    { image: $r('app.media.Xqwuyu'), imageName:"XQwuyu",label: '无语' },
+    { image: $r('app.media.Xqwuyu'), imageName:"Xqwuyu",label: '无语' }, // 修正：XQwuyu → Xqwuyu
     { image: $r('app.media.XQgandong'), imageName:"XQgandong",label: '感动' },
     { image: $r('app.media.XQku'),imageName:"XQku", label: '想哭' },
-    { image: $r('app.media.XQjingya'), imageName:"XQjiangya",label: '惊讶' },
-    { image: $r('app.media.XQyaunqi'),imageName:"XQyuanqi", label: '元气' },
+    { image: $r('app.media.XQjingya'), imageName:"XQjingya",label: '惊讶' }, // 修正：XQjiangya → XQjingya
+    { image: $r('app.media.XQyaunqi'),imageName:"XQyaunqi", label: '元气' }, // 修正：XQyuanqi → XQyaunqi
   ];
 
   @State selectXQ : number = 0;

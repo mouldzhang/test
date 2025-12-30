@@ -15,6 +15,10 @@ interface Song {
 @Entry
 @Component
 export struct MusicPage {
+  
+
+
+
   // AVPlayer实例 - 改为组件内部管理
   private avPlayer: media.AVPlayer | null = null;
 
