@@ -10,19 +10,20 @@
       "tablet"
 
     ],
-
+    // 添加权限声明（简化版本，只添加必要权限）
+    "requestPermissions": [
+      {
+        "name": "ohos.permission.INTERNET",
+        "usedScene": {
+          "abilities": ["EntryAbility"],
+          "when": "inuse"
+        }
+      }
+    ],
     "deliveryWithInstall": true,
     "installationFree": false,
+
     "pages": "$profile:main_pages",
-//    "requestPermissions": [
-//      {
-//        "name": "ohos.permission.READ_MEDIA_AUDIO",
-//        "reason": "需要读取本地音频文件以播放音乐",
-//        "usedScene": {
-//          "when": "inuse"
-//        }
-//      }
-//    ],
     "abilities": [
       {
         "name": "EntryAbility",

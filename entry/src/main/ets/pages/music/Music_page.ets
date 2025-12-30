@@ -1,90 +1,123 @@
+// MusicPage.ets
 import { media } from '@kit.MediaKit';
 import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
-
-// 歌曲数据接口
-interface Song {
-  id: number;
-  title: string;
-  artist: string;
-  fileName: string; // 音频文件名
-  cover: Resource; // 专辑封面资源
-  duration?: number; // 音频时长（毫秒）
-}
+import { router } from '@kit.ArkUI';
+import { Song, createSong } from './SongModel';
+import { FavoriteManager } from './FavoriteManager';
 
 @Entry
 @Component
 export struct MusicPage {
-  
-
-
-
-  // AVPlayer实例 - 改为组件内部管理
+  // AVPlayer实例
   private avPlayer: media.AVPlayer | null = null;
 
   // 状态变量
-  @State isFavorited: boolean = false;
-  @State backBtnScale: number = 1;
-  @State searchBtnScale: number = 1;
-  @State favBtnScale: number = 1;
-  @State prevBtnScale: number = 1;
-  @State playBtnScale: number = 1;
-  @State nextBtnScale: number = 1;
-  @State state: string = 'idle'; // 播放状态
-  @State duration: number = 0; // 音频时长
-  @State angleNum: number = 0; // 专辑封面旋转角度
-  @State currentProgress: number = 0; // 播放进度
-  @State currentSongIndex: number = 0; // 当前播放的歌曲索引
-  @State playMode: 'sequential' | 'random' | 'loop' = 'sequential'; // 播放模式
-  @State isPlayerReady: boolean = false; // 播放器是否就绪
+  @State state: string = 'idle';
+  @State duration: number = 0;
+  @State angleNum: number = 0;
+  @State currentProgress: number = 0;
+  @State currentSongIndex: number = 0;
+  @State playMode: 'sequential' | 'random' | 'loop' = 'sequential';
+  @State isPlayerReady: boolean = false;
+  // 添加标志位确保 context 已设置
+  private isContextSet: boolean = false;
+  // 每首歌的收藏状态
+  @State songFavoriteStatus: boolean[] = [];
+  @State isLoading: boolean = false;
 
-  // 歌曲列表 - 修正文件名
+  // 收藏管理器
+  private favoriteManager: FavoriteManager = FavoriteManager.getInstance();
+
+  // 歌曲列表 - 使用 createSong 函数创建
   private songList: Song[] = [
-    {
-      id: 1,
-      title: '七里香',
-      artist: '周杰伦',
-      fileName: '七里香-周杰伦.mp3', // 确保这个文件在resources/rawfile目录下
-      cover: $r('app.media.Music_cover')
-    },
-    {
-      id: 2,
-      title: '晴天',
-      artist: '周杰伦',
-      fileName: '晴天-周杰伦.mp3', // 修正文件名，去掉空格
-      cover: $r('app.media.Music_cover')
-    },
-    {
-      id: 3,
-      title: '稻香',
-      artist: '周杰伦',
-      fileName: '稻香-周杰伦.mp3', // 确保文件存在
-      cover: $r('app.media.Music_cover')
-    },
-    {
-      id: 3,
-      title: '花海',
-      artist: '周杰伦',
-      fileName: '花海-周杰伦.mp3', // 确保文件存在
-      cover: $r('app.media.Music_cover')
-    },
-    {
-      id: 3,
-      title: '青花瓷.',
-      artist: '周杰伦',
-      fileName: '青花瓷.mp3', // 确保文件存在
-      cover: $r('app.media.Music_cover')
-    }
+    createSong(1, '七里香', '周杰伦', '七里香-周杰伦.mp3', 'app.media.Music_cover'),
+    createSong(2, '晴天', '周杰伦', '晴天-周杰伦.mp3', 'app.media.Music_cover'),
+    createSong(3, '稻香', '周杰伦', '稻香-周杰伦.mp3', 'app.media.Music_cover'),
+    createSong(4, '花海', '周杰伦', '花海-周杰伦.mp3', 'app.media.Music_cover'),
+    createSong(5, '青花瓷', '周杰伦', '青花瓷.mp3', 'app.media.Music_cover')
   ];
 
-  // 组件初始化时创建AVPlayer
   aboutToAppear() {
+    // 获取context并设置到收藏管理器
+    let context = getContext(this) as common.UIAbilityContext;
+    this.favoriteManager.setContext(context);
+
+    // 初始化收藏状态
+    this.initializeFavoriteStatus();
     this.createAVPlayer();
   }
 
-  // 组件销毁时释放资源
   aboutToDisappear() {
     this.releaseAVPlayer();
+  }
+
+  // 初始化收藏状态
+  async initializeFavoriteStatus() {
+    this.isLoading = true;
+
+    // 给一些时间让收藏管理器加载数据，因为初始化是异步的，我们等待更长的时间
+    await new Promise<void>(resolve => setTimeout(resolve, 200));
+
+    this.songFavoriteStatus = this.songList.map(song =>
+    this.favoriteManager.isFavorite(song.id)
+    );
+
+    this.isLoading = false;
+    console.info('收藏状态初始化完成:', this.songFavoriteStatus);
+  }
+
+  // 获取当前歌曲的收藏状态
+  getCurrentSongFavorited(): boolean {
+    if (this.currentSongIndex >= 0 && this.currentSongIndex < this.songList.length) {
+      return this.songFavoriteStatus[this.currentSongIndex];
+    }
+    return false;
+  }
+
+  // 切换当前歌曲的收藏状态
+  async toggleFavorite() {
+    if (this.isLoading) {
+      console.warn('正在加载中，请稍后');
+      return;
+    }
+
+    const song = this.songList[this.currentSongIndex];
+    const currentStatus = this.songFavoriteStatus[this.currentSongIndex];
+
+    try {
+      if (currentStatus) {
+        // 取消收藏
+        await this.favoriteManager.removeFavorite(song.id);
+        this.songFavoriteStatus[this.currentSongIndex] = false;
+        console.info(`已取消收藏: ${song.title}`);
+      } else {
+        // 添加收藏
+        await this.favoriteManager.addFavorite(song);
+        this.songFavoriteStatus[this.currentSongIndex] = true;
+        console.info(`已收藏: ${song.title}`);
+      }
+
+      // 触发UI更新
+      this.songFavoriteStatus = [...this.songFavoriteStatus];
+
+      // 显示收藏数量变化
+      console.info(`当前收藏总数: ${this.favoriteManager.getFavoriteCount()}`);
+    } catch (error) {
+      console.error('收藏操作失败:', error);
+    }
+  }
+
+  // 跳转到收藏页面
+  navigateToFavorites() {
+    console.info('正在跳转到收藏页面');
+    router.pushUrl({
+      url: 'pages/music/FavoritesPage'
+    }).then(() => {
+      console.info('跳转成功');
+    }).catch((error: Error) => {
+      console.error('跳转失败:', error);
+    });
   }
 
   // 创建AVPlayer实例
@@ -92,15 +125,15 @@ export struct MusicPage {
     try {
       this.avPlayer = await media.createAVPlayer();
       if (this.avPlayer) {
-        console.info('Succeeded in creating AVPlayer');
+        console.info('AVPlayer创建成功');
         this.setAVPlayerCallback();
         await this.loadCurrentSong();
         this.isPlayerReady = true;
       } else {
-        console.error('Failed to create AVPlayer');
+        console.error('AVPlayer创建失败');
       }
     } catch (error) {
-      console.error(`Failed to create AVPlayer, error message:${error.message}`);
+      console.error(`创建AVPlayer失败: ${error.message}`);
     }
   }
 
@@ -110,6 +143,7 @@ export struct MusicPage {
       this.avPlayer.release();
       this.avPlayer = null;
       this.isPlayerReady = false;
+      console.info('AVPlayer资源已释放');
     }
   }
 
@@ -119,55 +153,44 @@ export struct MusicPage {
 
     // 状态变化回调
     this.avPlayer.on('stateChange', async (state: string) => {
-      console.info(`AVPlayer state changed to: ${state}`);
+      console.info(`播放器状态变化: ${state}`);
       this.state = state;
 
       switch (state) {
         case 'idle':
-          console.info('AVPlayer is idle');
           break;
-
         case 'initialized':
-          console.info('AVPlayer initialized');
           try {
             await this.avPlayer!.prepare();
-            console.info('AVPlayer prepared');
           } catch (error) {
-            console.error(`Prepare failed: ${error.message}`);
+            console.error(`准备失败: ${error.message}`);
           }
           break;
-
         case 'prepared':
-          console.info('AVPlayer prepared');
           this.duration = this.avPlayer!.duration;
           this.songList[this.currentSongIndex].duration = this.duration;
-          console.info(`Duration: ${this.duration}ms`);
+          console.info(`歌曲时长: ${this.duration}ms`);
           break;
-
         case 'playing':
-          console.info('AVPlayer is playing');
           this.angleNum = 360;
+          console.info('正在播放');
           break;
-
         case 'paused':
-          console.info('AVPlayer is paused');
+          console.info('已暂停');
           break;
-
         case 'completed':
-          console.info('AVPlayer completed');
           this.currentProgress = 0;
           this.angleNum = 0;
-          this.onNext(); // 播放下一首
+          console.info('播放完成');
+          this.onNext();
           break;
-
         case 'stopped':
-          console.info('AVPlayer stopped');
           this.currentProgress = 0;
           this.angleNum = 0;
+          console.info('已停止');
           break;
-
         case 'error':
-          console.error('AVPlayer encountered an error');
+          console.error('播放器遇到错误');
           break;
       }
     });
@@ -181,14 +204,14 @@ export struct MusicPage {
 
     // 播放错误回调
     this.avPlayer.on('error', (error: BusinessError) => {
-      console.error(`AVPlayer error: ${error.message}, code: ${error.code}`);
+      console.error(`播放器错误: ${error.message}, 错误码: ${error.code}`);
     });
   }
 
   // 加载当前歌曲
   async loadCurrentSong() {
     if (!this.avPlayer) {
-      console.error('AVPlayer is not initialized');
+      console.error('AVPlayer未初始化');
       return;
     }
 
@@ -203,27 +226,27 @@ export struct MusicPage {
 
       // 获取当前歌曲的文件名
       const fileName = this.songList[this.currentSongIndex].fileName;
-      console.info(`Loading song: ${fileName}`);
+      console.info(`正在加载歌曲: ${fileName}`);
 
       // 获取资源文件的FD路径
       let context = getContext(this) as common.UIAbilityContext;
       let fileDir = await context.resourceManager.getRawFd(fileName);
 
       if (fileDir && fileDir.fd > 0) {
-        console.info(`File loaded successfully, fd: ${fileDir.fd}`);
+        console.info(`文件加载成功, fd: ${fileDir.fd}`);
         this.avPlayer.fdSrc = fileDir;
       } else {
-        console.error(`Failed to load file: ${fileName}`);
+        console.error(`加载文件失败: ${fileName}`);
       }
     } catch (error) {
-      console.error(`Error loading song: ${error.message}`);
+      console.error(`加载歌曲错误: ${error.message}`);
     }
   }
 
   // 播放/暂停
   async togglePlayPause() {
     if (!this.avPlayer) {
-      console.error('AVPlayer is not initialized');
+      console.error('AVPlayer未初始化');
       return;
     }
 
@@ -232,30 +255,34 @@ export struct MusicPage {
         await this.avPlayer.pause();
         this.state = 'paused';
         this.angleNum = 0;
+        console.info('已暂停播放');
       } else if (this.state === 'paused' || this.state === 'completed') {
         await this.avPlayer.play();
         this.state = 'playing';
         this.angleNum = 360;
+        console.info('开始播放');
       } else if (this.state === 'prepared' || this.state === 'initialized') {
         await this.avPlayer.play();
         this.state = 'playing';
         this.angleNum = 360;
+        console.info('开始播放');
       } else {
         // 如果播放器未就绪，重新加载当前歌曲
         await this.loadCurrentSong();
         await this.avPlayer.play();
         this.state = 'playing';
         this.angleNum = 360;
+        console.info('重新加载并开始播放');
       }
     } catch (error) {
-      console.error(`Play/Pause error: ${error.message}`);
+      console.error(`播放/暂停操作错误: ${error.message}`);
     }
   }
 
   // 播放指定索引的歌曲
   async playSongAtIndex(index: number) {
     if (index < 0 || index >= this.songList.length) {
-      console.error('Invalid song index');
+      console.error('无效的歌曲索引');
       return;
     }
 
@@ -275,6 +302,8 @@ export struct MusicPage {
       this.state = 'playing';
       this.angleNum = 360;
     }
+
+    console.info(`切换到第 ${index + 1} 首: ${this.songList[index].title}`);
   }
 
   // 上一曲
@@ -284,9 +313,11 @@ export struct MusicPage {
     switch (this.playMode) {
       case 'random':
         newIndex = Math.floor(Math.random() * this.songList.length);
+        console.info(`随机播放模式，选择第 ${newIndex + 1} 首`);
         break;
       case 'loop':
         newIndex = this.currentSongIndex;
+        console.info('单曲循环模式，播放当前歌曲');
         break;
       case 'sequential':
       default:
@@ -294,6 +325,7 @@ export struct MusicPage {
         if (newIndex < 0) {
           newIndex = this.songList.length - 1;
         }
+        console.info(`顺序播放模式，播放上一首`);
         break;
     }
 
@@ -307,9 +339,11 @@ export struct MusicPage {
     switch (this.playMode) {
       case 'random':
         newIndex = Math.floor(Math.random() * this.songList.length);
+        console.info(`随机播放模式，选择第 ${newIndex + 1} 首`);
         break;
       case 'loop':
         newIndex = this.currentSongIndex;
+        console.info('单曲循环模式，播放当前歌曲');
         break;
       case 'sequential':
       default:
@@ -317,6 +351,7 @@ export struct MusicPage {
         if (newIndex >= this.songList.length) {
           newIndex = 0;
         }
+        console.info(`顺序播放模式，播放下一首`);
         break;
     }
 
@@ -328,6 +363,8 @@ export struct MusicPage {
     const modes: ('sequential' | 'random' | 'loop')[] = ['sequential', 'random', 'loop'];
     const currentIndex = modes.indexOf(this.playMode);
     this.playMode = modes[(currentIndex + 1) % modes.length];
+
+    console.info(`切换播放模式为: ${this.getPlayModeText()}`);
   }
 
   // 获取播放模式显示文本
@@ -367,13 +404,14 @@ export struct MusicPage {
         .backgroundColor('#F0F8FF')
         .borderRadius(15)
         .onClick(() => {
-          // 返回逻辑
+          router.back();
         });
 
         Blank();
         Text('音乐').fontSize(20).fontWeight(FontWeight.Bold).fontColor('#222222');
         Blank();
 
+        // 收藏页面入口按钮
         Button() {
           Image($r('app.media.Music_search'))
             .width('60%')
@@ -384,7 +422,7 @@ export struct MusicPage {
         .backgroundColor('#F0F8FF')
         .borderRadius(15)
         .onClick(() => {
-          // 搜索逻辑
+          this.navigateToFavorites();
         });
       }
       .width('100%')
@@ -392,7 +430,7 @@ export struct MusicPage {
 
       // 专辑封面（带旋转动画）
       Stack() {
-        Image(this.songList[this.currentSongIndex].cover)
+        Image($r(this.songList[this.currentSongIndex].cover))
           .width('100%')
           .height('100%')
           .borderRadius(100)
@@ -433,10 +471,18 @@ export struct MusicPage {
           .fontColor('#666666')
           .margin({ top: 5 });
 
-        Text(`${this.currentSongIndex + 1}/${this.songList.length}`)
-          .fontSize(14)
-          .fontColor('#888888')
-          .margin({ top: 3 });
+        // 显示收藏状态信息
+        Row() {
+          Text(`${this.currentSongIndex + 1}/${this.songList.length}`)
+            .fontSize(14)
+            .fontColor('#888888');
+
+          Text(` | 已收藏 ${this.favoriteManager.getFavoriteCount()} 首`)
+            .fontSize(14)
+            .fontColor('#FF6B6B')
+            .margin({ left: 10 });
+        }
+        .margin({ top: 3 });
       }
       .alignItems(HorizontalAlign.Center)
       .margin({ top: 10 });
@@ -479,9 +525,9 @@ export struct MusicPage {
         Row() {
           // 收藏按钮
           Button() {
-            Image(this.isFavorited
-              ? $r('app.media.Music_active_best')
-              : $r('app.media.Music_normal')
+            Image(this.getCurrentSongFavorited()
+              ? $r('app.media.Music_active_best')  // 已收藏图标
+              : $r('app.media.Music_normal')       // 未收藏图标
             )
               .width('100%')
               .height('100%')
@@ -490,7 +536,7 @@ export struct MusicPage {
           .height(40)
           .backgroundColor('transparent')
           .onClick(() => {
-            this.isFavorited = !this.isFavorited;
+            this.toggleFavorite();
           });
 
           // 上一曲按钮
@@ -557,13 +603,65 @@ export struct MusicPage {
         .width('100%')
         .justifyContent(FlexAlign.Center);
 
-        // 调试信息（开发时可显示）
-        if (!this.isPlayerReady) {
-          Text('播放器初始化中...')
-            .fontSize(12)
-            .fontColor('#FF0000')
-            .margin({ top: 10 });
+        // 查看收藏按钮
+        Button('查看收藏列表', { type: ButtonType.Normal })
+          .width('60%')
+          .height(40)
+          .backgroundColor('#4A90E2')
+          .fontColor('#FFFFFF')
+          .borderRadius(20)
+          .margin({ top: 30 })
+          .onClick(() => {
+            this.navigateToFavorites();
+          });
+
+        // 调试信息区域
+        Column() {
+          // 显示当前收藏状态
+          Row() {
+            Text(this.isContextSet ? '✓ Context 已设置' : '✗ Context 未设置')
+              .fontSize(12)
+              .fontColor(this.isContextSet ? '#00AA00' : '#FF0000')
+          }
+          .margin({ top: 5 });
+
+          // 调试按钮（开发时使用）
+          Button('调试信息', { type: ButtonType.Normal })
+            .width('40%')
+            .height(30)
+            .backgroundColor('#888888')
+            .fontColor('#FFFFFF')
+            .borderRadius(15)
+            .margin({ top: 10 })
+            .onClick(() => {
+              console.info('=== 调试信息 ===');
+              console.info('当前歌曲索引:', this.currentSongIndex);
+              console.info('当前歌曲:', this.songList[this.currentSongIndex].title);
+              console.info('收藏状态数组:', this.songFavoriteStatus);
+              console.info('当前歌曲收藏状态:', this.getCurrentSongFavorited());
+              console.info('收藏总数:', this.favoriteManager.getFavoriteCount());
+              console.info('所有收藏:', this.favoriteManager.getAllFavorites());
+              console.info('播放器状态:', this.state);
+              console.info('播放进度:', this.currentProgress, '/', this.duration);
+            });
+
+          // 播放器状态显示
+          if (!this.isPlayerReady) {
+            Text('播放器初始化中...')
+              .fontSize(12)
+              .fontColor('#FF0000')
+              .margin({ top: 10 });
+          }
+
+          if (this.isLoading) {
+            Text('正在加载收藏状态...')
+              .fontSize(12)
+              .fontColor('#FFA500')
+              .margin({ top: 10 });
+          }
         }
+        .alignItems(HorizontalAlign.Center)
+        .width('100%');
       }
       .width('100%')
       .padding({ top: 20 });

@@ -3,10 +3,11 @@
     "pages/login/login",
     "pages/TabUIPage",
     "pages/Home/Home",
-    "pages/music/Music_page",
     "pages/memory/memory_page",
     "pages/my/My_Page",
     "pages/Home/daka_page",
-    "pages/Home/EventPage"
+    "pages/Home/EventPage",
+    "pages/music/Music_page",
+    "pages/music/FavoritesPage"
   ]
 }
