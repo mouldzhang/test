@@ -1,6 +1,7 @@
 import XQbiaoqianDialog from '../dialog/XQbiaoqianDialog';
 import { XQZiYuan, MoodParams } from '../types'; // 引入 MoodParams 类型
 import web_webview from '@ohos.web.webview' // 若无需可删除
+import { router } from '@kit.ArkUI';
 
 const VALID_IMAGE_NAMES = [ // 复用 Home 页面的合法图片名称校验数组
   "XQhappy", "XQsad", "XQbaoxiao", "XQliuhan",
@@ -55,6 +56,14 @@ export struct MemoryPage {
       this.showMoodImage = null;
       this.showMoodLabel = "";
     }
+  }
+  // 跳转到收藏页面
+  navigateToFavorites() {
+    router.pushUrl({
+      url: 'pages/music/FavoritesPage'
+    }).catch((error: Error) => {
+      console.error('跳转失败:', error);
+    });
   }
 
   // 页面显示时，重新同步数据（确保最新，原有逻辑+心情事件无需额外同步，@StorageProp自动更新）
@@ -178,9 +187,8 @@ export struct MemoryPage {
         .animation({ duration: 200, curve: Curve.EaseOut })
         .position({ right: 40, bottom: 60 })
         .onClick(() => {
-          this.manageScale = 0.8;
-          setTimeout(() => this.manageScale = 1, 200);
-        });
+          this.navigateToFavorites();
+        })
       }
       .width('100%')
       .height('50%');

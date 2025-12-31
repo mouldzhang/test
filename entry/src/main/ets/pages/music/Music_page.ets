@@ -87,14 +87,6 @@ export struct MusicPage {
     }
   }
 
-  // 跳转到收藏页面
-  navigateToFavorites() {
-    router.pushUrl({
-      url: 'pages/music/FavoritesPage'
-    }).catch((error: Error) => {
-      console.error('跳转失败:', error);
-    });
-  }
 
   // 创建AVPlayer实例
   async createAVPlayer() {
@@ -333,19 +325,6 @@ export struct MusicPage {
           .fontWeight(FontWeight.Bold)
 
         Blank()
-
-        Button() {
-          Image($r('app.media.Music_ListManament'))
-            .width(24)
-            .height(24)
-        }
-        .width(40)
-        .height(40)
-        .backgroundColor('#F0F8FF')
-        .borderRadius(20)
-        .onClick(() => {
-          this.navigateToFavorites();
-        })
       }
       .width('100%')
       .padding({ left: 16, right: 16 })
@@ -384,9 +363,6 @@ export struct MusicPage {
             .fontSize(14)
             .fontColor('#888888')
 
-          Text(`已收藏 ${this.favoriteManager.getFavoriteCount()} 首`)
-            .fontSize(14)
-            .fontColor('#FF6B6B')
         }
       }
       .alignItems(HorizontalAlign.Center)
@@ -513,17 +489,6 @@ export struct MusicPage {
         })
       }
       .justifyContent(FlexAlign.Center)
-
-      // 收藏列表按钮
-      Button('查看收藏列表')
-        .width('70%')
-        .height(40)
-        .backgroundColor('#4A90E2')
-        .fontColor('#FFFFFF')
-        .borderRadius(20)
-        .onClick(() => {
-          this.navigateToFavorites();
-        })
 
       // 状态显示
       if (!this.isPlayerReady) {

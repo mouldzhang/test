@@ -9,6 +9,7 @@
     "pages/Home/EventPage",
     "pages/music/Music_page",
     "pages/baidu_page",
-    "pages/login/register"
+    "pages/login/register",
+    "pages/music/FavoritesPage"
   ]
 }
