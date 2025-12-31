@@ -5,7 +5,7 @@ import router from '@ohos.router';
 struct SearchBaiduPage {
   build() {
     Column() {
-      // 顶部返回按钮（保留原有样式风格）
+      // 顶部返回按纽
       Row() {
         Button("← 返回Home")
           .onClick(() => {

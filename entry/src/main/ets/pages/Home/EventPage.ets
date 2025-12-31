@@ -1,10 +1,18 @@
 import router from '@ohos.router'
+import {MoodParams} from '../types';
+import { thirdPaymentService } from '@kit.PaymentKit';
 
 @Entry
 @Component
 struct EventPage {
   // 状态变量保留，用于存储输入内容
   @State moodEventInput: string = "";
+  @StorageProp("moodData") globalMoodData: MoodParams = {
+    imageName: "",
+    label: ""
+  };
+
+@State EventPagelabe :string = this.globalMoodData.label
 
   build() {
     Column({space:10}) {
@@ -42,7 +50,7 @@ struct EventPage {
         .margin({ top: 10, bottom: 10 })
         .width('100%')
 
-      Text("今日心情：**")
+      Text("今日心情：" + this.EventPagelabe)
         .fontColor(Color.Black)
         .fontSize(18)
         .fontWeight(FontWeight.Bold)
