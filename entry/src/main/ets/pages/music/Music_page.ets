@@ -5,7 +5,7 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { router } from '@kit.ArkUI';
 import { Song, createSong } from './SongModel';
 import { FavoriteManager } from './FavoriteManager';
-
+import { LyricView } from './LyricView';
 @Entry
 @Component
 export struct MusicPage {
@@ -22,17 +22,61 @@ export struct MusicPage {
   @State isPlayerReady: boolean = false;
   @State songFavoriteStatus: boolean[] = [];
   @State isLoading: boolean = false;
+  @State isLyricExpanded: boolean = false;  // 添加这行！！！
 
   // 收藏管理器
   private favoriteManager: FavoriteManager = FavoriteManager.getInstance();
 
   // 歌曲列表
   private songList: Song[] = [
-    createSong(1, '七里香', '周杰伦', '七里香-周杰伦.mp3', 'app.media.Music_cover'),
-    createSong(2, '晴天', '周杰伦', '晴天-周杰伦.mp3', 'app.media.Music_cover'),
-    createSong(3, '稻香', '周杰伦', '稻香-周杰伦.mp3', 'app.media.Music_cover'),
-    createSong(4, '花海', '周杰伦', '花海-周杰伦.mp3', 'app.media.Music_cover'),
-    createSong(5, '青花瓷', '周杰伦', '青花瓷.mp3', 'app.media.Music_cover')
+    createSong(1, '七里香', '周杰伦', '七里香-周杰伦.mp3', 'app.media.Music_cover',    `[00:00.00] 七里香 - 周杰伦
+[00:10.00] 作词：方文山 作曲：周杰伦
+[00:20.00] 窗外的麻雀 在电线杆上多嘴
+[00:25.00] 你说这一句 很有夏天的感觉
+[00:30.00] 手中的铅笔 在纸上来来回回
+[00:35.00] 我用几行字形容你是我的谁
+[00:40.00] 秋刀鱼的滋味 猫跟你都想了解
+[00:45.00] 初恋的香味就这样被我们寻回
+[00:50.00] 那温暖的阳光 像刚摘的鲜艳草莓
+[00:55.00] 你说你舍不得吃掉这一种感觉`),
+    createSong(2, '晴天', '周杰伦', '晴天-周杰伦.mp3', 'app.media.Music_cover',    `[00:00.00] 晴天 - 周杰伦
+[00:10.00] 作词：周杰伦 作曲：周杰伦
+[00:15.00] 故事的小黄花 从出生那年就飘着
+[00:20.00] 童年的荡秋千 随记忆一直晃到现在
+[00:25.00] Re So So Si Do Si La
+[00:28.00] So La Si Si Si Si La Si La So
+[00:32.00] 吹着前奏望着天空 我想起花瓣试着掉落
+[00:38.00] 为你翘课的那一天 花落的那一天
+[00:42.00] 教室的那一间 我怎么看不见`
+    ),
+    createSong(3, '稻香', '周杰伦', '稻香-周杰伦.mp3', 'app.media.Music_cover',
+      `[00:00.00] 稻香 - 周杰伦
+[00:10.00] 作词：周杰伦 作曲：周杰伦
+[00:15.00] 对这个世界如果你有太多的抱怨
+[00:20.00] 跌倒了就不敢继续往前走
+[00:24.00] 为什么人要这么的脆弱 堕落
+[00:29.00] 请你打开电视看看
+[00:31.00] 多少人为生命在努力勇敢的走下去
+[00:35.00] 我们是不是该知足
+[00:37.00] 珍惜一切 就算没有拥有`),
+    createSong(4, '花海', '周杰伦', '花海-周杰伦.mp3', 'app.media.Music_cover',    `[00:00.00] 花海 - 周杰伦
+[00:10.00] 作词：古小力、黄淩嘉 作曲：周杰伦
+[00:15.00] 静止了 所有的花开
+[00:20.00] 遥远了 清晰了爱
+[00:24.00] 天郁闷 爱却很喜欢
+[00:29.00] 那时候 我不懂 这叫爱
+[00:34.00] 你喜欢 站在那窗台
+[00:38.00] 你好久 都没再来`
+    ),
+    createSong(5, '青花瓷', '周杰伦', '青花瓷.mp3', 'app.media.Music_cover',`[00:10.00] 作词：方文山 作曲：周杰伦
+  [00:15.00] 素胚勾勒出青花笔锋浓转淡
+  [00:20.00] 瓶身描绘的牡丹一如你初妆
+  [00:25.00] 冉冉檀香透过窗心事我了然
+  [00:30.00] 宣纸上走笔至此搁一半
+  [00:35.00] 釉色渲染仕女图韵味被私藏
+  [00:40.00] 而你嫣然的一笑如含苞待放
+  [00:45.00] 你的美一缕飘散 去到我去不了的地方`
+  )
   ];
 
   aboutToAppear() {
@@ -306,17 +350,27 @@ export struct MusicPage {
 
   build() {
     Column({ space: 20 }) {
+
       // 标题栏
       Row() {
+
+        // 歌词展开/折叠按钮
         Button() {
-          Image($r('app.media.Music_back'))
+          Image(this.isLyricExpanded ?
+            $r('app.media.Music_on') :
+            $r('app.media.Music_off')
+          )
             .width(24)
             .height(24)
         }
-        .width(40)
-        .height(40)
+        .width(48)
+        .height(48)
         .backgroundColor('#F0F8FF')
-        .borderRadius(20)
+        .borderRadius(24)
+        .onClick(() => {
+          this.isLyricExpanded = !this.isLyricExpanded;
+        })
+        .margin({ left: 10 })
 
         Blank()
 
@@ -367,18 +421,17 @@ export struct MusicPage {
       }
       .alignItems(HorizontalAlign.Center)
 
-      // 歌词区域（简化）
-      Column() {
-        Text('点击查看歌词')
-          .fontSize(16)
-          .fontColor('#666666')
-      }
-      .width('90%')
-      .height(100)
-      .backgroundColor('#FAFAFA')
-      .borderRadius(8)
-      .justifyContent(FlexAlign.Center)
-      .alignItems(HorizontalAlign.Center)
+      // 在 MusicPage 的 build 方法中，修改歌词区域
+      LyricView({
+        lyrics: this.songList[this.currentSongIndex].lyrics || [],
+        currentTime: this.currentProgress,
+        isExpanded: this.isLyricExpanded
+      })
+        .width('90%')
+        .height(this.isLyricExpanded ? 300 : 100)  // 展开时更高
+        .backgroundColor('#FAFAFA')
+        .borderRadius(8)
+
 
       // 进度条
       Column({ space: 8 }) {
