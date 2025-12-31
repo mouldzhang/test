@@ -493,7 +493,7 @@ export struct My_Page {
                 .fontWeight(FontWeight.Bold)
                 .fontColor('#333333')
               Blank()
-              Image($r('app.media.startIcon')) // 关闭图标
+              Image($r('app.media.close')) // 关闭图标
                 .width(20)
                 .height(20)
                 .onClick(() => {
