@@ -1,23 +1,23 @@
-
 import { router, promptAction } from '@kit.ArkUI';
 
 @Entry
 @Component
 export struct Index {
   @State passwordState: boolean = false
-  @State account: string = ''
-  @State password: string = ''
-  // 新增：协议勾选状态（默认未勾选）
+  @State account: string = '' // 用户当前输入的账号
+  @State password: string = '' // 用户当前输入的密码
   @State isAgreeProtocol: boolean = false
+
+  // 核心新增：绑定全局存储的注册账号和密码（自动同步注册数据）
+  @StorageProp("globalAccount") registerAccount: string = ""; // 注册时存入的全局账号
+  @StorageProp("globalPassword") registerPassword: string = ""; // 注册时存入的全局密码
 
   build() {
     Column() {
-      // logo图标
       Image($r('app.media.login'))
         .width(250)
         .height(240)
 
-      // 账号输入框（保留原有逻辑）
       Row() {
         TextInput({
           placeholder: '请输入您的账号'
@@ -33,7 +33,6 @@ export struct Index {
       .backgroundColor('#fff')
       .borderRadius(20)
 
-      // 密码输入框（保留原有逻辑）
       TextInput({
         placeholder: '请输入您的密码'
       })
@@ -54,16 +53,13 @@ export struct Index {
           this.password = value;
         })
 
-      // 已阅读并同意（核心修改：给Checkbox绑定状态）
       Row() {
         Checkbox()
           .width(10)
           .margin({ top: 6 })
-          // 绑定勾选状态变量：勾选/取消时更新isAgreeProtocol
           .onChange((checked: boolean) => {
             this.isAgreeProtocol = checked;
           })
-        // 协议文本（保留原有样式）
         Text() {
           Span('我已经阅读同意')
           Span('《心情记录》').fontColor('#3274f6')
@@ -76,47 +72,48 @@ export struct Index {
       .alignItems(VerticalAlign.Top)
       .margin({ top: 20 })
 
-      // 登录按钮（核心修改：增加协议勾选校验）
       Button('登录')
         .width('100%')
         .fontColor("black")
         .backgroundColor("#D7EDA2")
         .margin({ top: 20 })
         .onClick(() => {
-          // 第一步：校验是否勾选协议
           if (!this.isAgreeProtocol) {
-            // 未勾选：弹出Toast提示
             promptAction.showToast({
-              message: '请先阅读并同意用户协议', // 提示文本
-              duration: 2000, // 提示显示时长（毫秒）
+              message: '请先阅读并同意用户协议',
+              duration: 2000,
             });
-            return; // 终止后续逻辑
+            return;
           }
 
-          // 第二步：校验账号密码
+          // 调用修改后的动态校验方法
           if (this.validateCredentials()) {
-            this.navigateToNextPage(); // 验证通过：跳转页面
+            this.navigateToNextPage();
           } else {
-            // 账号密码错误：弹出提示
             promptAction.showToast({
-              message: '账号或密码错误',
+              message: '账号或密码错误（或未注册）',
               duration: 2000
             });
-            console.error('账号或密码错误');
+            console.error('账号或密码错误，或用户未注册');
           }
         })
 
-      // 新用户注册等链接（保留原有逻辑）
       Row({ space: 15 }) {
         Text('新用户注册').fontSize(14).fontColor('#666')
-        Text('无法登录').fontSize(14).fontColor('#666')
       }
       .margin({ top: 20 })
+      .gesture(
+        TapGesture({ count: 1 })
+          .onAction(() => {
+            router.pushUrl({
+              url: 'pages/login/register'
+            }).catch((error: Error) => {
+              console.error('路由跳转失败:', error.message);
+            });
+          }))
 
-      // 填充组件
       Blank()
 
-      // 其他登录方式（保留原有逻辑）
       Column() {
         Row() {
           Image($r('app.media.Memory_qq')).width(30)
@@ -139,21 +136,33 @@ export struct Index {
     .height('100%')
   }
 
-  // 账号密码验证逻辑（保留原有）
+  // 核心修改：替换原有固定值校验，改为动态比对全局注册数据
   validateCredentials(): boolean {
-    if (this.account === '123456' && this.password === '123456') {
-      return true;
-    } else {
+    // 第一步：先判断是否有注册数据（避免未注册时校验）
+    if (!this.registerAccount.trim() || !this.registerPassword.trim()) {
+      console.error('暂无注册数据，请先注册');
       return false;
     }
+
+    // 第二步：动态比对当前输入的账号密码 与 全局注册的账号密码
+    const inputAccount = this.account.trim();
+    const inputPassword = this.password.trim();
+
+    // 比对一致返回true（登录成功），不一致返回false（登录失败）
+    return inputAccount === this.registerAccount && inputPassword === this.registerPassword;
   }
 
-  // 跳转逻辑（保留，若路由仍有问题可参考上一轮的路径/API修正）
+  // 原有跳转逻辑不变（登录成功后更新全局登录状态）
   navigateToNextPage() {
-    // 增加错误捕获，避免跳转失败无提示
     try {
+      // 更新全局登录状态为已登录
+      AppStorage.Set('globalIsLogin', true);
+      // 同步当前登录的账号密码（可选，确保全局数据一致性）
+      AppStorage.Set('globalAccount', this.account.trim());
+      AppStorage.Set('globalPassword', this.password.trim());
+
       router.pushUrl({ url: 'pages/TabUIPage' });
-      console.log('跳转成功');
+      console.log('登录成功，跳转首页');
     } catch (error) {
       console.error('跳转失败：', error);
       promptAction.showToast({
@@ -163,4 +172,3 @@ export struct Index {
     }
   }
 }
-

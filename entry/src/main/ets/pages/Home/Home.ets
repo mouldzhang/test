@@ -147,6 +147,7 @@ export  struct Home {
             Text(this.selectedMoodLabel)
               .fontSize(25)
               .margin({ left: 45 })
+              .fontWeight(FontWeight.Bold)
           }
 
           Text(this.weekendday)

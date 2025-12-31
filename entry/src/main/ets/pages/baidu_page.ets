@@ -18,13 +18,12 @@ struct SearchBaiduPage {
       .justifyContent(FlexAlign.Start)
       .margin({ left: 10, top: 10 })
 
-      // 核心：Web组件加载百度首页，实现搜索功能
       Web({
         src: "https://www.baidu.com", // 百度官方URL
-        controller: new WebController() // Web控制器，用于控制页面跳转、刷新等
+        controller: new WebController()
       })
         .width('100%')
-        .height('90%') // 占满剩余页面高度
+        .height('90%')
     }
     .width('100%')
     .height('100%')
