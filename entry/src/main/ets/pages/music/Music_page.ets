@@ -335,7 +335,7 @@ export struct MusicPage {
         Blank()
 
         Button() {
-          Image($r('app.media.Music_search'))
+          Image($r('app.media.Music_ListManament'))
             .width(24)
             .height(24)
         }
@@ -449,6 +449,9 @@ export struct MusicPage {
         .height(48)
         .backgroundColor('#F0F8FF')
         .borderRadius(24)
+        .onClick(() => {
+          this.toggleFavorite();
+        })
 
         // 上一曲
         Button() {
@@ -467,8 +470,8 @@ export struct MusicPage {
         // 播放/暂停
         Button() {
           Image(this.state === 'playing'
-            ? $r('app.media.Music_pause')
-            : $r('app.media.Music_play1')
+            ? $r('app.media.Music_play1')
+            : $r('app.media.Music_pause')
           )
             .width(32)
             .height(32)
