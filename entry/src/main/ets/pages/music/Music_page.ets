@@ -514,17 +514,6 @@ export struct MusicPage {
       }
       .justifyContent(FlexAlign.Center)
 
-      // 收藏列表按钮
-      Button('查看收藏列表')
-        .width('70%')
-        .height(40)
-        .backgroundColor('#4A90E2')
-        .fontColor('#FFFFFF')
-        .borderRadius(20)
-        .onClick(() => {
-          this.navigateToFavorites();
-        })
-
       // 状态显示
       if (!this.isPlayerReady) {
         Text('播放器初始化中...')
