@@ -22,6 +22,15 @@ const STORE_KEY: StoreKey = {
   SIGNATURE: 'signature'
 };
 
+// 登录信息键
+interface GeneratedObjectLiteralInterface_1 {
+  ACCOUNT: string;
+}
+
+const LOGIN_INFO_KEY: GeneratedObjectLiteralInterface_1 = {
+  ACCOUNT: 'globalAccount'
+};
+
 @Entry
 @Component
 export struct My_Page {
@@ -37,6 +46,9 @@ export struct My_Page {
   @State birthDate: string = '12月23日';
   @State region: string = '冰岛';
   @State signature: string = '洗洗睡了！！！';
+  
+  // 登录账号信息
+  @StorageProp('globalAccount') loginAccount: string = '';
 
   // 编辑表单的临时变量
   @State editGender: string = '';
@@ -257,7 +269,7 @@ export struct My_Page {
 
             // 用户信息：用户名和账号（垂直排列）
             Column() {
-              Text('用户名：xxx')
+              Text(`用户名：${this.loginAccount || '未登录'}`)
                 .fontSize(18)
                 .fontColor(Color.White)
                 .fontWeight(FontWeight.Bold)
@@ -265,7 +277,7 @@ export struct My_Page {
                 .maxLines(1)
                 .textOverflow({ overflow: TextOverflow.Ellipsis })
 
-              Text('账 号：xxx')
+              Text(`账 号：${this.loginAccount || '未登录'}`)
                 .fontSize(14)
                 .fontColor('#f0f0f0')
                 .textAlign(TextAlign.Start)
