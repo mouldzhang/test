@@ -155,11 +155,17 @@ export struct Index {
   // 原有跳转逻辑不变（登录成功后更新全局登录状态）
   navigateToNextPage() {
     try {
+      const trimmedAccount = this.account.trim();
+
       // 更新全局登录状态为已登录
       AppStorage.Set('globalIsLogin', true);
-      // 同步当前登录的账号密码（可选，确保全局数据一致性）
-      AppStorage.Set('globalAccount', this.account.trim());
+      // 保存当前登录的账号到全局状态（用于我的页面显示）
+      AppStorage.Set('currentLoginAccount', trimmedAccount);
+      // 同步全局账号密码（确保一致性）
+      AppStorage.Set('globalAccount', trimmedAccount);
       AppStorage.Set('globalPassword', this.password.trim());
+
+      console.log('登录成功，账号保存到全局状态:', trimmedAccount);
 
       router.pushUrl({ url: 'pages/TabUIPage' });
       console.log('登录成功，跳转首页');

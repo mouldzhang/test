@@ -209,23 +209,6 @@ export struct RegisterPage {
       // 填充组件：自动填充空白，让底部布局更均衡
       Blank()
 
-      // 其他登录方式：优化间距，视觉更舒展
-      Column() {
-        Text('其他登录方式')
-          .fontSize(14)
-          .fontColor('#666')
-          .margin({ bottom: 10 }) // 调整与图标区域的间距
-          .alignSelf(ItemAlign.Center)
-
-        Row({ space: 40 }) { // 统一设置图标间距，替代justifyContent
-          Image($r('app.media.Memory_qq')).width(30).height(30)
-          Image($r('app.media.Memory_weiXin')).width(30).height(30).fillColor('#5ea14f')
-          Image($r('app.media.Memory_bo')).width(30).height(30).fillColor('#5cacf3')
-        }
-        .alignSelf(ItemAlign.Center) // 图标居中显示
-      }
-      .width('100%')
-      .margin({ bottom: 20 }) // 底部留间距，不贴边
     }
     .padding(25) // 适当加大页面内边距，更舒展
     .width('100%')
@@ -289,13 +272,30 @@ export struct RegisterPage {
   // 跳转回登录页（原有逻辑不变）
   navigateToLoginPage() {
     try {
-      // 核心修改：将注册数据存入 AppStorage 全局存储
-      AppStorage.Set('globalUserName', this.userName.trim()); // 用户名
-      AppStorage.Set('globalAccount', this.account.trim());   // 账号
-      AppStorage.Set('globalGender', this.gender);            // 性别
-      AppStorage.Set('globalPassword', this.password.trim()); // 密码（可选，建议仅临时存储）
+      const trimmedUserName = this.userName.trim();
+      const trimmedAccount = this.account.trim();
+      const trimmedPassword = this.password.trim();
+
+      // 核心修改：将所有注册数据存入 AppStorage 全局存储
+      // 用户基本信息
+      AppStorage.Set('globalUserName', trimmedUserName);   // 用户名
+      AppStorage.Set('globalAccount', trimmedAccount);     // 账号
+      AppStorage.Set('globalGender', this.gender);         // 性别
+      AppStorage.Set('globalPassword', trimmedPassword);   // 密码
+
+      // 我的页面需要的额外信息
+      AppStorage.Set('currentLoginUserName', trimmedUserName);  // 当前登录用户名
+      AppStorage.Set('currentLoginAccount', trimmedAccount);    // 当前登录账号
+      AppStorage.Set('currentLoginGender', this.gender);        // 当前登录性别
+
       // 注册后默认未登录，需用户手动登录
       AppStorage.Set('globalIsLogin', false);
+
+      console.log('注册数据已全局存储：', {
+        userName: trimmedUserName,
+        account: trimmedAccount,
+        gender: this.gender
+      });
 
       // 跳转登录页
       router.pushUrl({ url: 'pages/login/login' });

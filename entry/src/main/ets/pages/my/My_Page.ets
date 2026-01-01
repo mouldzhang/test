@@ -1,6 +1,7 @@
 import preferences from '@ohos.data.preferences';
 import { Context } from '@kit.AbilityKit';
-import router from '@ohos.router'; // 确保导入router模块
+import router from '@ohos.router';
+// import { SelectOption } from '@ohos.arkui.node'; // 导入SelectOption类型
 
 interface MoodItem {
   icon: Resource;
@@ -12,14 +13,15 @@ interface StoreKey {
   BIRTH_DATE: string;
   REGION: string;
   SIGNATURE: string;
+  USER_NAME?: string; // 可选添加用户名存储键
 }
 
-// 定义一个常量用于存储键
 const STORE_KEY: StoreKey = {
   GENDER: 'gender',
   BIRTH_DATE: 'birthDate',
   REGION: 'region',
-  SIGNATURE: 'signature'
+  SIGNATURE: 'signature',
+  USER_NAME: 'userName' // 如果需要存储用户名到Preferences，可以添加此项
 };
 
 @Entry
@@ -28,11 +30,11 @@ export struct My_Page {
   @Prop context?: Context;
   @State message: string = 'my';
   @State currentIndex: number = 0;
-  @State showSidebar: boolean = false; // 控制侧边栏显示状态
-  @State currentTab: string = '心情'; // 控制标签栏选中状态
-  @State showEditDialog: boolean = false; // 控制编辑对话框显示状态
+  @State showSidebar: boolean = false;
+  @State currentTab: string = '心情';
+  @State showEditDialog: boolean = false;
 
-  // 个人信息状态变量（带有默认值）
+  // 个人信息状态变量
   @State gender: string = '男';
   @State birthDate: string = '12月23日';
   @State region: string = '冰岛';
@@ -44,7 +46,21 @@ export struct My_Page {
   @State editRegion: string = '';
   @State editSignature: string = '';
 
-  // 使用 $r() 函数引用本地图片资源
+  @StorageProp('currentLoginUserName') currentLoginUserName: string = '';
+  @StorageProp('currentLoginAccount') currentLoginAccount: string = '';
+  @StorageProp('currentLoginGender') currentLoginGender: string = '';
+  // 性别选项 - 使用SelectOption数组
+  private genderOptions: SelectOption[] = [
+    { value: '男' },
+    { value: '女' },
+    { value: '保密' }
+  ];
+
+  // Toast相关状态
+  @State toastMessage: string = '';
+  @State showToastFlag: boolean = false;
+  @State isSaving: boolean = false;
+
   private imageList: Resource[] = [
     $r('app.media.slidshow1'),
     $r('app.media.slidshow2'),
@@ -52,7 +68,6 @@ export struct My_Page {
     $r('app.media.slidshow4')
   ];
 
-  // 心情选项数据
   private moodList: MoodItem[] = [
     { icon: $r('app.media.startIcon'), text: '开心' },
     { icon: $r('app.media.startIcon'), text: '愉悦' },
@@ -60,7 +75,6 @@ export struct My_Page {
     { icon: $r('app.media.startIcon'), text: '来两个大嘴巴子' }
   ];
 
-  // 标签栏数据
   private tabList: string[] = ['心情', '收藏'];
 
   // Preferences实例
@@ -74,21 +88,26 @@ export struct My_Page {
   // 加载用户数据
   async loadUserData() {
     try {
-      // 创建或获取Preferences实例
       if (this.context) {
         this.prefs = await preferences.getPreferences(this.context, 'userProfile');
 
-        // 从Preferences中读取数据，如果没有则使用默认值
-        const savedGender = await this.prefs.get(STORE_KEY.GENDER, '男');
-        const savedBirthDate = await this.prefs.get(STORE_KEY.BIRTH_DATE, '12月23日');
-        const savedRegion = await this.prefs.get(STORE_KEY.REGION, '冰岛');
-        const savedSignature = await this.prefs.get(STORE_KEY.SIGNATURE, '洗洗睡了！！！');
+        // 从Preferences加载数据，如果没有则使用全局状态的数据
+        const savedGender = await this.prefs.get(STORE_KEY.GENDER, this.currentLoginGender || '男');
+        const savedBirthDate = await this.prefs.get(STORE_KEY.BIRTH_DATE, '1月1日');
+        const savedRegion = await this.prefs.get(STORE_KEY.REGION, '中国');
+        const savedSignature = await this.prefs.get(STORE_KEY.SIGNATURE, 'a住');
 
-        // 更新状态变量
         this.gender = savedGender as string;
         this.birthDate = savedBirthDate as string;
         this.region = savedRegion as string;
         this.signature = savedSignature as string;
+
+        // 如果Preferences中没有性别数据，但全局状态中有，则保存到Preferences
+        if (!savedGender && this.currentLoginGender) {
+          await this.prefs.put(STORE_KEY.GENDER, this.currentLoginGender);
+          await this.prefs.flush();
+          this.gender = this.currentLoginGender;
+        }
 
         console.log('用户数据加载成功:', {
           gender: this.gender,
@@ -110,13 +129,11 @@ export struct My_Page {
       }
 
       if (this.prefs) {
-        // 保存数据到Preferences
         await this.prefs.put(STORE_KEY.GENDER, this.gender);
         await this.prefs.put(STORE_KEY.BIRTH_DATE, this.birthDate);
         await this.prefs.put(STORE_KEY.REGION, this.region);
         await this.prefs.put(STORE_KEY.SIGNATURE, this.signature);
 
-        // 提交更改
         await this.prefs.flush();
 
         console.log('用户数据保存成功:', {
@@ -128,17 +145,18 @@ export struct My_Page {
       }
     } catch (error) {
       console.error('保存用户数据失败:', error);
+      // 修复问题①：不能抛出任意类型，只抛出Error对象
+      throw new Error(String(error));
     }
   }
 
-  // 关闭侧边栏的方法
+  // 关闭侧边栏
   closeSidebar() {
     this.showSidebar = false;
   }
 
   // 打开编辑资料对话框
   openEditDialog() {
-    // 将当前值赋给临时编辑变量
     this.editGender = this.gender;
     this.editBirthDate = this.birthDate;
     this.editRegion = this.region;
@@ -146,126 +164,159 @@ export struct My_Page {
     this.showEditDialog = true;
   }
 
+  // 验证数据
+  validateData(): boolean {
+    if (!this.editGender || this.editGender.trim() === '') {
+      this.showToast('请填写性别');
+      return false;
+    }
+
+    if (!this.editBirthDate || this.editBirthDate.trim() === '') {
+      this.showToast('请填写出生日期');
+      return false;
+    }
+
+    if (!this.editRegion || this.editRegion.trim() === '') {
+      this.showToast('请填写所在地区');
+      return false;
+    }
+
+    if (!this.editSignature || this.editSignature.trim() === '') {
+      this.showToast('请填写个性签名');
+      return false;
+    }
+
+    return true;
+  }
+
   // 保存编辑的资料
   async saveProfile() {
-    // 更新主状态变量
-    this.gender = this.editGender;
-    this.birthDate = this.editBirthDate;
-    this.region = this.editRegion;
-    this.signature = this.editSignature;
-    this.showEditDialog = false;
+    if (!this.validateData()) {
+      return;
+    }
 
-    // 保存到本地存储
-    await this.saveUserData();
+    this.isSaving = true;
 
-    // 显示保存成功的提示
-    this.showToast('资料保存成功！');
+    try {
+      // 模拟网络请求延迟 - 修复问题②：显式指定类型
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, 500);
+      });
+
+      this.gender = this.editGender.trim();
+      this.birthDate = this.editBirthDate.trim();
+      this.region = this.editRegion.trim();
+      this.signature = this.editSignature.trim();
+
+      await this.saveUserData();
+
+      this.showEditDialog = false;
+      this.showToast('资料保存成功！');
+    } catch (error) {
+      console.error('保存失败:', error);
+      this.showToast('保存失败，请重试');
+    } finally {
+      this.isSaving = false;
+    }
   }
 
   // 取消编辑
   cancelEdit() {
-    this.showEditDialog = false;
+    if (!this.isSaving) {
+      this.showEditDialog = false;
+    }
   }
 
-  // 显示提示消息（模拟Toast）
-  @Builder showToast(message: string) {
-    Text(message)
-      .fontSize(14)
-      .fontColor(Color.White)
-      .backgroundColor('rgba(0, 0, 0, 0.7)')
-      .padding({ left: 16, right: 16, top: 8, bottom: 8 })
-      .borderRadius(4)
-      .margin({ bottom: 50 })
+  // 显示Toast
+  showToast(message: string) {
+    this.toastMessage = message;
+    this.showToastFlag = true;
+
+    setTimeout(() => {
+      this.showToastFlag = false;
+    }, 3000);
   }
 
-  // 跳转到首页的方法
+  // 跳转到首页
   navigateToHome() {
-    this.closeSidebar(); // 关闭侧边栏
-
+    this.closeSidebar();
     router.pushUrl({
-      url: 'pages/Home/TabUIPage' // 这里是首页的路由路径
+      url: 'pages/Home/TabUIPage'
     }).catch((error: Error) => {
       console.error('跳转到首页失败:', error);
     });
   }
 
-  // 跳转到首页的方法
+  // 跳转到登录页
   navigateToLogin() {
-    this.closeSidebar(); // 关闭侧边栏
-
+    this.closeSidebar();
     router.pushUrl({
-      url: 'pages/login/login' //
+      url: 'pages/login/login'
     }).catch((error: Error) => {
       console.error('跳转到登录失败:', error);
     });
   }
 
   build() {
-    // 使用Stack作为根布局，允许侧边栏和编辑对话框覆盖在主内容之上
     Stack() {
       // 主内容层
       Column() {
-        // 顶部占1/3的图片轮播区域 - 使用Stack布局包裹
+        // 顶部占1/3的图片轮播区域
         Stack({ alignContent: Alignment.BottomStart }) {
-          // 轮播图部分
           Swiper() {
             ForEach(this.imageList, (imageRes: Resource, index: number) => {
-              // 每张图片项使用Stack布局叠加蒙版
               Stack() {
-                // 底层：图片
                 Image(imageRes)
                   .width('100%')
                   .height('100%')
                   .objectFit(ImageFit.Cover)
 
-                // 上层：半透明蒙版
                 Row() {
-                  // 蒙版区域，现在为空，后续可添加内容
+                  // 蒙版区域
                 }
                 .width('100%')
                 .height('100%')
-                .backgroundColor('rgba(0, 0, 0, 0.4)') // 半透明黑色蒙版
+                .backgroundColor('rgba(0, 0, 0, 0.4)')
               }
             }, (imageRes: Resource, index: number) => index.toString())
           }
           .width('100%')
           .height('100%')
-          .autoPlay(true) // 自动轮播
-          .interval(5000) // 轮播间隔5秒
-          .indicator(true) // 显示指示器
-          .loop(true) // 循环轮播
-          .duration(1000) // 切换动画时长1秒
+          .autoPlay(true)
+          .interval(5000)
+          .indicator(true)
+          .loop(true)
+          .duration(1000)
           .onChange((index: number) => {
-            // 轮播变化时更新当前索引
             this.currentIndex = index;
           })
 
           // 固定在轮播图左下角的头像和用户信息
           Row() {
-            // 圆形头像
             Stack() {
               Image($r('app.media.avatar'))
                 .width('100%')
                 .height('100%')
                 .objectFit(ImageFit.Cover)
-                .clip(new Circle({ width: 60, height: 60 })) // 裁剪为圆形
+                .clip(new Circle({ width: 60, height: 60 }))
             }
             .width(60)
             .height(60)
-            .borderRadius(30) // 确保圆形
-            .border({ width: 2, color: Color.White }) // 白色边框
+            .borderRadius(30)
+            .border({ width: 2, color: Color.White })
 
-            // 用户信息：用户名和账号（垂直排列）
             Column() {
-              Text('用户名：xxx')
-                .fontSize(18)
-                .fontColor(Color.White)
-                .fontWeight(FontWeight.Bold)
+              // 显示用户名（来自全局状态）
+              Text(`用户名：${this.currentLoginUserName || '未设置'}`)
+                .fontSize(14)
+                .fontColor('#f0f0f0')
                 .textAlign(TextAlign.Start)
                 .maxLines(1)
                 .textOverflow({ overflow: TextOverflow.Ellipsis })
-
-              Text('账 号：xxx')
+                .margin({ bottom: 2 })
+              Text(`账 号：${this.currentLoginAccount || '未登录'}`)
                 .fontSize(14)
                 .fontColor('#f0f0f0')
                 .textAlign(TextAlign.Start)
@@ -283,7 +334,7 @@ export struct My_Page {
           Row() {
             Blank()
             Column() {
-              Image($r('app.media.sanhengxian')) // 菜单图标
+              Image($r('app.media.sanhengxian'))
                 .width(40)
                 .height(40)
                 .objectFit(ImageFit.Contain)
@@ -302,13 +353,13 @@ export struct My_Page {
           .padding({ top: 28, right: 24 })
         }
         .width('100%')
-        .height('33.33%') // 顶部1/3区域
+        .height('33.33%')
 
         // 底部占2/3的核心内容区域
         Column() {
           // 1. 个人资料卡片区域
           Column() {
-            // 1.1 性别/日期/地区标签行（蓝色背景）
+            // 1.1 性别/日期/地区标签行
             Row() {
               Text(this.gender)
                 .fontSize(14)
@@ -329,7 +380,7 @@ export struct My_Page {
                 .fontColor(Color.White)
             }
             .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-            .backgroundColor('#4A90E2') // 蓝色背景匹配UI
+            .backgroundColor('#4A90E2')
             .borderRadius(4)
             .margin({ bottom: 8 })
 
@@ -345,11 +396,11 @@ export struct My_Page {
             Button('编辑资料')
               .width('100%')
               .height(40)
-              .backgroundColor('#E5E5E5') // 灰色背景
+              .backgroundColor('#E5E5E5')
               .fontSize(14)
               .fontColor('#666666')
               .borderRadius(4)
-              .border({ width: 0 }) // 去掉默认边框
+              .border({ width: 0 })
               .onClick(() => {
                 this.openEditDialog();
               })
@@ -361,7 +412,7 @@ export struct My_Page {
           .margin({ top: 16, bottom: 16 })
           .alignItems(HorizontalAlign.Start)
 
-          // 2. 标签栏（心情/近期/创建/收藏）
+          // 2. 标签栏
           Row() {
             ForEach(this.tabList, (tab: string) => {
               Column() {
@@ -369,7 +420,6 @@ export struct My_Page {
                   .fontSize(16)
                   .fontColor(this.currentTab === tab ? '#4A90E2' : '#666666')
                   .fontWeight(this.currentTab === tab ? FontWeight.Bold : FontWeight.Normal)
-                // 选中标签的下划线
                 if (this.currentTab === tab) {
                   Divider()
                     .width(20)
@@ -391,10 +441,9 @@ export struct My_Page {
           .borderRadius(4)
           .margin({ bottom: 12 })
 
-          // 3. 标签内容区域（默认显示心情内容）
+          // 3. 标签内容区域
           Stack() {
             if (this.currentTab === '心情') {
-              // 心情选项网格布局（2列）
               Grid() {
                 ForEach(this.moodList, (item: MoodItem, index: number) => {
                   GridItem() {
@@ -417,12 +466,11 @@ export struct My_Page {
                 })
               }
               .width('90%')
-              .columnsTemplate('1fr 1fr') // 2列布局
+              .columnsTemplate('1fr 1fr')
               .columnsGap(1)
               .rowsGap(1)
               .backgroundColor('#EEEEEE')
             } else {
-              // 其他标签占位内容
               Text(`暂无${this.currentTab}相关内容`)
                 .fontSize(14)
                 .fontColor('#999999')
@@ -431,7 +479,7 @@ export struct My_Page {
           }
         }
         .width('100%')
-        .height('66.67%') // 底部2/3区域
+        .height('66.67%')
         .backgroundColor('#F5F5F5')
         .justifyContent(FlexAlign.Start)
         .alignItems(HorizontalAlign.Center)
@@ -440,10 +488,9 @@ export struct My_Page {
       .width('100%')
       .backgroundColor("#f3f3f3")
 
-      // 侧边栏遮罩层（当侧边栏显示时出现）
+      // 侧边栏遮罩层
       if (this.showSidebar) {
         Stack() {
-          // 左侧空白区域（遮罩层），点击可以关闭侧边栏
           Column() {
             Blank()
           }
@@ -453,7 +500,6 @@ export struct My_Page {
             this.closeSidebar();
           })
 
-          // 侧边栏内容区域
           Column() {
             Row() {
               Image($r('app.media.sanhengxian'))
@@ -471,12 +517,11 @@ export struct My_Page {
             .margin({ top: 50, bottom: 30 })
             .padding({ left: 20, right: 20 })
 
-            // 修改：为"首页"菜单项添加点击事件
             MyMenuItem({
               icon: $r('app.media.shouye'),
               text: '首页',
               onItemClick: () => {
-                this.navigateToHome(); // 调用跳转方法
+                this.navigateToHome();
               }
             })
 
@@ -484,11 +529,10 @@ export struct My_Page {
               icon: $r('app.media.tuichu'),
               text: '退出登录',
               onItemClick: () => {
-                this.navigateToLogin(); // 调用跳转方法
+                this.navigateToLogin();
               }
             })
 
-            // 其他菜单项保持不变
             MyMenuItem({ icon: $r('app.media.geren'), text: '个人资料' })
             MyMenuItem({ icon: $r('app.media.lishi'), text: '历史记录' })
             MyMenuItem({ icon: $r('app.media.bangzhu'), text: '帮助与反馈' })
@@ -509,7 +553,7 @@ export struct My_Page {
         .position({ x: 0, y: 0 })
       }
 
-      // 编辑资料对话框（覆盖层）
+      // 编辑资料对话框
       if (this.showEditDialog) {
         Stack() {
           // 半透明背景遮罩层
@@ -520,7 +564,9 @@ export struct My_Page {
           .height('100%')
           .backgroundColor('#60000000')
           .onClick(() => {
-            this.cancelEdit();
+            if (!this.isSaving) {
+              this.cancelEdit();
+            }
           })
 
           // 编辑表单弹窗
@@ -532,11 +578,13 @@ export struct My_Page {
                 .fontWeight(FontWeight.Bold)
                 .fontColor('#333333')
               Blank()
-              Image($r('app.media.close')) // 关闭图标
+              Image($r('app.media.close'))
                 .width(20)
                 .height(20)
                 .onClick(() => {
-                  this.cancelEdit();
+                  if (!this.isSaving) {
+                    this.cancelEdit();
+                  }
                 })
             }
             .width('100%')
@@ -544,7 +592,8 @@ export struct My_Page {
 
             // 表单内容
             Column({ space: 16 }) {
-              // 性别输入
+              // 性别选择 - 修复问题③：使用SelectOption数组
+              // 性别选择 - 使用按钮替代
               Column() {
                 Text('性别')
                   .fontSize(14)
@@ -552,16 +601,24 @@ export struct My_Page {
                   .margin({ bottom: 8 })
                   .textAlign(TextAlign.Start)
                   .width('100%')
-                TextInput({ text: this.editGender })
-                  .width('100%')
-                  .height(40)
-                  .backgroundColor('#F5F5F5')
-                  .borderRadius(4)
-                  .padding({ left: 12, right: 12 })
-                  .onChange((value: string) => {
-                    this.editGender = value;
+
+                Row({ space: 10 }) {
+                  ForEach(['男', '女', '保密'], (gender: string) => {
+                    Button(gender)
+                      .fontSize(14)
+                      .backgroundColor(this.editGender === gender ? '#4A90E2' : '#F5F5F5')
+                      .fontColor(this.editGender === gender ? Color.White : '#333333')
+                      .borderRadius(4)
+                      .onClick(() => {
+                        this.editGender = gender;
+                      })
                   })
+                }
+                .width('100%')
+                .height(40)
+                .justifyContent(FlexAlign.SpaceBetween)
               }
+
 
               // 出生日期输入
               Column() {
@@ -571,7 +628,7 @@ export struct My_Page {
                   .margin({ bottom: 8 })
                   .textAlign(TextAlign.Start)
                   .width('100%')
-                TextInput({ text: this.editBirthDate })
+                TextInput({ text: this.editBirthDate, placeholder: '如: 12月23日' })
                   .width('100%')
                   .height(40)
                   .backgroundColor('#F5F5F5')
@@ -590,7 +647,7 @@ export struct My_Page {
                   .margin({ bottom: 8 })
                   .textAlign(TextAlign.Start)
                   .width('100%')
-                TextInput({ text: this.editRegion })
+                TextInput({ text: this.editRegion, placeholder: '请输入所在地区' })
                   .width('100%')
                   .height(40)
                   .backgroundColor('#F5F5F5')
@@ -609,7 +666,7 @@ export struct My_Page {
                   .margin({ bottom: 8 })
                   .textAlign(TextAlign.Start)
                   .width('100%')
-                TextInput({ text: this.editSignature })
+                TextInput({ text: this.editSignature, placeholder: '请输入个性签名' })
                   .width('100%')
                   .height(80)
                   .backgroundColor('#F5F5F5')
@@ -632,18 +689,20 @@ export struct My_Page {
                 .fontColor('#666666')
                 .borderRadius(4)
                 .border({ width: 0 })
+                .enabled(!this.isSaving)
                 .onClick(() => {
                   this.cancelEdit();
                 })
 
-              Button('保存')
+              Button(this.isSaving ? '保存中...' : '保存')
                 .flexGrow(1)
                 .height(44)
-                .backgroundColor('#4A90E2')
+                .backgroundColor(this.isSaving ? '#CCCCCC' : '#4A90E2')
                 .fontSize(14)
                 .fontColor(Color.White)
                 .borderRadius(4)
                 .border({ width: 0 })
+                .enabled(!this.isSaving)
                 .onClick(() => {
                   this.saveProfile();
                 })
@@ -660,25 +719,42 @@ export struct My_Page {
         .width('100%')
         .height('100%')
       }
+
+      // Toast提示 - 修复问题④和⑤：移除pointerEvents，使用其他方式
+      if (this.showToastFlag) {
+        Column() {
+          Blank()
+          Text(this.toastMessage)
+            .fontSize(14)
+            .fontColor(Color.White)
+            .backgroundColor('rgba(0, 0, 0, 0.7)')
+            .padding({ left: 16, right: 16, top: 8, bottom: 8 })
+            .borderRadius(20)
+            .margin({ bottom: 100 })
+        }
+        .width('100%')
+        .height('100%')
+        .position({ x: 0, y: 0 })
+        .alignItems(HorizontalAlign.Center)
+        .justifyContent(FlexAlign.End)
+      }
     }
     .height('100%')
     .width('100%')
   }
 }
 
-// 更新MyMenuItem接口定义
 interface MenuItem {
   icon: Resource;
   text: string;
-  onItemClick?: () => void; // 新增：点击事件回调
+  onItemClick?: () => void;
 }
 
-// 侧边栏菜单项组件
 @Component
 struct MyMenuItem {
   private icon: Resource = $r('app.media.startIcon');
   private text: string = '';
-  private onItemClick?: () => void; // 新增：点击事件回调
+  private onItemClick?: () => void;
 
   build() {
     Row() {
@@ -699,7 +775,6 @@ struct MyMenuItem {
     .alignItems(VerticalAlign.Center)
     .onClick(() => {
       console.log(`点击了菜单项: ${this.text}`);
-      // 调用点击回调
       if (this.onItemClick) {
         this.onItemClick();
       }

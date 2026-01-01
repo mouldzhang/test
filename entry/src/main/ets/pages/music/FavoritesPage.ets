@@ -55,7 +55,7 @@ export struct FavoritesPage {
     console.info(`播放歌曲: ${song.title} (ID: ${song.id})`);
 
     // 携带歌曲ID返回音乐页面
-    router.back({
+    router.pushUrl({
       url: 'pages/music/MusicPage',
       params: { songId: song.id }
     });
@@ -186,15 +186,6 @@ export struct FavoritesPage {
 
                 // 操作按钮
                 Row() {
-                  Button('播放', { type: ButtonType.Normal })
-                    .width(60)
-                    .height(30)
-                    .backgroundColor('#4A90E2')
-                    .fontColor('#FFFFFF')
-                    .borderRadius(15)
-                    .onClick(() => {
-                      this.playSong(song);
-                    });
 
                   Button('取消', { type: ButtonType.Normal })
                     .width(60)

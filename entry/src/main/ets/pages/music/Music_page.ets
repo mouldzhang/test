@@ -83,11 +83,13 @@ export struct MusicPage {
   ];
 
   aboutToAppear() {
+
     let context = getContext(this) as common.UIAbilityContext;
     this.favoriteManager.setContext(context);
     this.playStatsManager.setContext(context);  // 设置统计管理器context
     this.initializeFavoriteStatus();
     this.createAVPlayer();
+
   }
 
   aboutToDisappear() {
