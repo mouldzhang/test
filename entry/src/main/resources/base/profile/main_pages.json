@@ -10,6 +10,7 @@
     "pages/music/Music_page",
     "pages/baidu_page",
     "pages/login/register",
-    "pages/music/FavoritesPage"
+    "pages/music/FavoritesPage",
+    "pages/music/StatsPage"
   ]
 }

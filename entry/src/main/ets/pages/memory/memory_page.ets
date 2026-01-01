@@ -66,6 +66,14 @@ export struct MemoryPage {
     });
   }
 
+  bgmToFavorites() {
+    router.pushUrl({
+      url: 'pages/music/StatsPage'
+    }).catch((error: Error) => {
+      console.error('跳转失败:', error);
+    });
+  }
+
   // 页面显示时，重新同步数据（确保最新，原有逻辑+心情事件无需额外同步，@StorageProp自动更新）
   onPageShow() {
     this.syncMoodDataFromGlobal();
@@ -135,8 +143,7 @@ export struct MemoryPage {
         .animation({ duration: 200, curve: Curve.EaseOut })
         .position({ right: 40, top: 40 })
         .onClick(() => {
-          this.bgmScale = 0.8;
-          setTimeout(() => this.bgmScale = 1, 200);
+         this.bgmToFavorites()
         });
 
         if(this.showMoodLabel) {

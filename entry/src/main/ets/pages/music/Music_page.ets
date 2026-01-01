@@ -2,10 +2,12 @@
 import { media } from '@kit.MediaKit';
 import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { router } from '@kit.ArkUI';
 import { Song, createSong } from './SongModel';
 import { FavoriteManager } from './FavoriteManager';
 import { LyricView } from './LyricView';
+import { PlayStatsManager } from './PlayStatsManager';
+import { router } from '@kit.ArkUI';
+
 @Entry
 @Component
 export struct MusicPage {
@@ -22,11 +24,12 @@ export struct MusicPage {
   @State isPlayerReady: boolean = false;
   @State songFavoriteStatus: boolean[] = [];
   @State isLoading: boolean = false;
-  @State isLyricExpanded: boolean = false;  // 添加这行！！！
+  @State isLyricExpanded: boolean = false;
+  @State playCounts: Map<number, number> = new Map();  // 新增：播放次数状态
 
   // 收藏管理器
   private favoriteManager: FavoriteManager = FavoriteManager.getInstance();
-
+  private playStatsManager: PlayStatsManager = PlayStatsManager.getInstance();  // 新增
   // 歌曲列表
   private songList: Song[] = [
     createSong(1, '七里香', '周杰伦', '七里香-周杰伦.mp3', 'app.media.Music_cover',    `[00:00.00] 七里香 - 周杰伦
@@ -82,6 +85,7 @@ export struct MusicPage {
   aboutToAppear() {
     let context = getContext(this) as common.UIAbilityContext;
     this.favoriteManager.setContext(context);
+    this.playStatsManager.setContext(context);  // 设置统计管理器context
     this.initializeFavoriteStatus();
     this.createAVPlayer();
   }
@@ -89,6 +93,15 @@ export struct MusicPage {
   aboutToDisappear() {
     this.releaseAVPlayer();
   }
+
+  // 新增：获取当前歌曲播放次数
+  getCurrentSongPlayCount(): number {
+    const currentSong = this.songList[this.currentSongIndex];
+    return this.playCounts.get(currentSong.id) || 0;
+  }
+
+
+
 
   // 初始化收藏状态
   async initializeFavoriteStatus() {
@@ -130,7 +143,34 @@ export struct MusicPage {
       console.error('收藏操作失败:', error);
     }
   }
+  async playSongAtIndex(index: number) {
+    if (index < 0 || index >= this.songList.length) return;
 
+    this.currentSongIndex = index;
+    this.currentProgress = 0;
+    this.angleNum = 0;
+
+    await this.loadCurrentSong();
+
+    // 记录播放统计
+    const currentSong = this.songList[this.currentSongIndex];
+    await this.playStatsManager.recordPlay(currentSong.id);
+
+    if (this.avPlayer && (this.state === 'playing' || this.state === 'paused')) {
+      await this.avPlayer.play();
+      this.state = 'playing';
+      this.angleNum = 360;
+    }
+  }
+
+  async navigateToStatsPage() {
+    try {
+      // 确保统计数据已保存
+      await this.playStatsManager.initialize();
+    } catch (error) {
+      console.error('准备统计数据失败:', error);
+    }
+  }
 
   // 创建AVPlayer实例
   async createAVPlayer() {
@@ -255,22 +295,22 @@ export struct MusicPage {
     }
   }
 
-  // 播放指定索引的歌曲
-  async playSongAtIndex(index: number) {
-    if (index < 0 || index >= this.songList.length) return;
-
-    this.currentSongIndex = index;
-    this.currentProgress = 0;
-    this.angleNum = 0;
-
-    await this.loadCurrentSong();
-
-    if (this.avPlayer && (this.state === 'playing' || this.state === 'paused')) {
-      await this.avPlayer.play();
-      this.state = 'playing';
-      this.angleNum = 360;
-    }
-  }
+  // // 播放指定索引的歌曲
+  // async playSongAtIndex(index: number) {
+  //   if (index < 0 || index >= this.songList.length) return;
+  //
+  //   this.currentSongIndex = index;
+  //   this.currentProgress = 0;
+  //   this.angleNum = 0;
+  //
+  //   await this.loadCurrentSong();
+  //
+  //   if (this.avPlayer && (this.state === 'playing' || this.state === 'paused')) {
+  //     await this.avPlayer.play();
+  //     this.state = 'playing';
+  //     this.angleNum = 360;
+  //   }
+  // }
 
   // 上一曲
   async onPrev() {
@@ -379,10 +419,28 @@ export struct MusicPage {
           .fontWeight(FontWeight.Bold)
 
         Blank()
+        // 统计页面按钮
+        Button() {
+          Text('统计')
+            .fontSize(14)
+            .fontColor('#4A90E2')
+        }
+        .width(60)
+        .height(30)
+        .backgroundColor('#F0F8FF')
+        .borderRadius(15)
+        .onClick(async () => {
+          await this.navigateToStatsPage();
+          router.pushUrl({
+            url: 'pages/music/StatsPage'
+          });
+        })
       }
       .width('100%')
       .padding({ left: 16, right: 16 })
       .justifyContent(FlexAlign.SpaceBetween)
+
+
 
       // 专辑封面
       Stack() {
