@@ -16,6 +16,7 @@ export struct MemoryPage {
   @State searchScale: number = 1;
   @State manageScale: number = 1;
   @State expandScale: number = 1;
+  @State currentDate: string = ''; // 新增：存储当前日期
 
   // 核心1：绑定 AppStorage 中的全局心情事件文本，自动同步 Home 页面数据
   @StorageProp("moodEventText") globalMoodEventText: string = "暂无心情事件记录";
@@ -30,6 +31,15 @@ export struct MemoryPage {
   // 页面即将显示时，同步心情图片和标签（原有逻辑，保留不变）
   aboutToAppear() {
     this.syncMoodDataFromGlobal();
+    this.updateCurrentDate(); // 新增：获取当前日期
+  }
+
+  // 新增：获取当前日期的方法
+  updateCurrentDate() {
+    const now = new Date();
+    const month = now.getMonth() + 1; // 月份从0开始，需要+1
+    const day = now.getDate();
+    this.currentDate = `${month}月${day}号`;
   }
 
   // 同步全局心情图片和标签（原有逻辑，保留不变）
@@ -57,6 +67,7 @@ export struct MemoryPage {
       this.showMoodLabel = "";
     }
   }
+
   // 跳转到收藏页面
   navigateToFavorites() {
     router.pushUrl({
@@ -77,6 +88,7 @@ export struct MemoryPage {
   // 页面显示时，重新同步数据（确保最新，原有逻辑+心情事件无需额外同步，@StorageProp自动更新）
   onPageShow() {
     this.syncMoodDataFromGlobal();
+    this.updateCurrentDate(); // 新增：每次页面显示时更新日期
   }
 
   build() {
@@ -143,7 +155,7 @@ export struct MemoryPage {
         .animation({ duration: 200, curve: Curve.EaseOut })
         .position({ right: 40, top: 40 })
         .onClick(() => {
-         this.bgmToFavorites()
+          this.bgmToFavorites()
         });
 
         if(this.showMoodLabel) {
@@ -204,19 +216,25 @@ export struct MemoryPage {
       Stack() {
         Row() {
           // 展示日期 + 心情事件文本
-            Text('9月1号')
+          Column() {
+            // 使用动态获取的日期
+            Text(this.currentDate || this.getCurrentDate()) // 确保有日期显示
               .fontSize(16)
               .fontWeight(FontWeight.Medium)
               .fontColor('#222222');
+
             // 展示全局心情事件文本（有数据显示内容，无数据显示默认值）
             Text(this.globalMoodEventText)
               .fontSize(14)
               .fontColor('#666666')
               .margin({ top: 5 }); // 与日期保持小间距
+          }
+          .alignItems(HorizontalAlign.Start)
+          .padding({ left: 15 })
 
         }
         .width('100%')
-        .justifyContent(FlexAlign.SpaceAround)
+        .justifyContent(FlexAlign.SpaceBetween)
         .padding({ left: 15, right: 15, top: 15 })
         .alignSelf(ItemAlign.Start)
       }
@@ -231,5 +249,15 @@ export struct MemoryPage {
     .backgroundColor('#FFFFFF')
     .alignItems(HorizontalAlign.Center)
     .padding({ bottom: 50 });
+  }
+
+  // 新增：备用方法，确保build时能获取日期
+  getCurrentDate(): string {
+    if (this.currentDate) return this.currentDate;
+
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    return `${month}月${day}号`;
   }
 }

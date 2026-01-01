@@ -7,7 +7,7 @@ struct SearchBaiduPage {
     Column() {
       // 顶部返回按纽
       Row() {
-        Button("← 返回Home")
+        Button("返回")
           .onClick(() => {
             router.back(); // 返回上一页（Home页面）
           })

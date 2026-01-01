@@ -1,5 +1,6 @@
 import preferences from '@ohos.data.preferences';
 import { Context } from '@kit.AbilityKit';
+import router from '@ohos.router'; // 确保导入router模块
 
 interface MoodItem {
   icon: Resource;
@@ -177,6 +178,28 @@ export struct My_Page {
       .margin({ bottom: 50 })
   }
 
+  // 跳转到首页的方法
+  navigateToHome() {
+    this.closeSidebar(); // 关闭侧边栏
+
+    router.pushUrl({
+      url: 'pages/Home/TabUIPage' // 这里是首页的路由路径
+    }).catch((error: Error) => {
+      console.error('跳转到首页失败:', error);
+    });
+  }
+
+  // 跳转到首页的方法
+  navigateToLogin() {
+    this.closeSidebar(); // 关闭侧边栏
+
+    router.pushUrl({
+      url: 'pages/login/login' //
+    }).catch((error: Error) => {
+      console.error('跳转到登录失败:', error);
+    });
+  }
+
   build() {
     // 使用Stack作为根布局，允许侧边栏和编辑对话框覆盖在主内容之上
     Stack() {
@@ -221,7 +244,7 @@ export struct My_Page {
           Row() {
             // 圆形头像
             Stack() {
-              Image($r('app.media.avatar')) // 请替换为实际头像资源
+              Image($r('app.media.avatar'))
                 .width('100%')
                 .height('100%')
                 .objectFit(ImageFit.Cover)
@@ -448,7 +471,24 @@ export struct My_Page {
             .margin({ top: 50, bottom: 30 })
             .padding({ left: 20, right: 20 })
 
-            MyMenuItem({ icon: $r('app.media.shouye'), text: '首页' })
+            // 修改：为"首页"菜单项添加点击事件
+            MyMenuItem({
+              icon: $r('app.media.shouye'),
+              text: '首页',
+              onItemClick: () => {
+                this.navigateToHome(); // 调用跳转方法
+              }
+            })
+
+            MyMenuItem({
+              icon: $r('app.media.tuichu'),
+              text: '退出登录',
+              onItemClick: () => {
+                this.navigateToLogin(); // 调用跳转方法
+              }
+            })
+
+            // 其他菜单项保持不变
             MyMenuItem({ icon: $r('app.media.geren'), text: '个人资料' })
             MyMenuItem({ icon: $r('app.media.lishi'), text: '历史记录' })
             MyMenuItem({ icon: $r('app.media.bangzhu'), text: '帮助与反馈' })
@@ -456,7 +496,6 @@ export struct My_Page {
             MyMenuItem({ icon: $r('app.media.huancun'), text: '清理缓存' })
             MyMenuItem({ icon: $r('app.media.shezhi'), text: '设置' })
             MyMenuItem({ icon: $r('app.media.zhangh'), text: '切换账号' })
-            MyMenuItem({ icon: $r('app.media.tuichu'), text: '退出登录' })
           }
           .width('70%')
           .height('100%')
@@ -627,9 +666,11 @@ export struct My_Page {
   }
 }
 
+// 更新MyMenuItem接口定义
 interface MenuItem {
   icon: Resource;
   text: string;
+  onItemClick?: () => void; // 新增：点击事件回调
 }
 
 // 侧边栏菜单项组件
@@ -637,6 +678,7 @@ interface MenuItem {
 struct MyMenuItem {
   private icon: Resource = $r('app.media.startIcon');
   private text: string = '';
+  private onItemClick?: () => void; // 新增：点击事件回调
 
   build() {
     Row() {
@@ -657,6 +699,10 @@ struct MyMenuItem {
     .alignItems(VerticalAlign.Center)
     .onClick(() => {
       console.log(`点击了菜单项: ${this.text}`);
+      // 调用点击回调
+      if (this.onItemClick) {
+        this.onItemClick();
+      }
     })
   }
 }
